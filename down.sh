@@ -1,2 +1,3 @@
 #! /bin/bash
-docker compose down
+NAME=$1
+docker compose -f compose${NAME}.yaml down

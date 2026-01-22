@@ -1,3 +1,4 @@
 #! /bin/bash
 ./down.sh
-docker compose up --force-recreate --build -d
+NAME=$1
+docker compose -f compose${NAME}.yaml up --force-recreate --build -d

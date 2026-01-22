@@ -10,9 +10,9 @@ class Satellite:
   def send(self,payload):
     action = payload["action"]
     if action == "echo":
-      return self.echo()
+      return self.echo(payload)
     return {"error":"Unkown action"}
-  def echo(self):
-    return (self.sat,self.orb)
+  def echo(self,payload):
+      return {"me":(self.sat,self.orb),"incoming": payload}
   def get_id(self):
     return [self.sat,self.orb]
