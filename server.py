@@ -5,11 +5,15 @@ from satellite import Satellite
 from routing import get_direction, add_direction
 import json
 import requests
+import threading
 
 app = Flask(__name__)
 target = None 
 
 responses = {}
+
+def send_data(host, port, path, data):
+  requests.post(f"http://{host}:{port}/{path}", json=data)
 
 @app.route('/send', methods=['POST'])
 def send():
@@ -28,7 +32,7 @@ def send():
     if not "route" in data:
       data["route"] = []
     data["route"].append(target.get_id())
-    requests.post(f"http://{host}:{port}/send", json=data)
+    threading.Thread(target=send_data,args=(host,port,"send",data)).start()
   
   return json.dumps({"messageid": data["messageid"],"status":"OK","direction": direction, "next_sat": next_sat})
 
