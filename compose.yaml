@@ -1,0 +1,18 @@
+services:
+  orb1:
+    build: 
+      context: .
+      dockerfile: Dockerfile.sat
+    environment:
+      ORB: "1"
+      MAX_ORB: "2"
+      MAX_SAT: "3"
+  orb2:
+    build:
+      context: .
+      dockerfile: Dockerfile.sat
+    environment:
+      ORB: "2"
+      MAX_ORB: "2"
+      MAX_SAT: "3"
+
