@@ -58,7 +58,10 @@ def send():
     data["route"].append(target.get_id())
     sat =  data["target"]
     action = data["action"]
-    print(f"DEBUG: Route from {target.get_id()} to {sat} direction {direction} next {next_sat} action {action}") 
+    map_log = ""
+    if "mapper" in data:
+      map_log = "Mapper %s" % data["mapper"]
+    print(f"DEBUG: Route {map_log} from {target.get_id()} to {sat} direction {direction} next {next_sat} action {action}") 
     threading.Thread(target=send_data,args=(host,port,"send",data)).start()
 
   output = {"status":"OK","direction": direction, "next_sat": next_sat}
@@ -95,6 +98,7 @@ def submit():
   print(f"DEBUG: Sat Tasks {sat_tasks} Processors {sat_processors}")
   allocations = allocate(sat_tasks, sat_processors)
 
+  target.set_expected_map_count(len(allocations))
   # allocate map tasks
   for allocation in allocations:
     task = allocation[0]
@@ -105,7 +109,13 @@ def submit():
     threading.Thread(target=send_data,args=(host,port,"send",data)).start()
 
   return json.dumps({"allocations":allocations})
-  
+ 
+@app.route('/completion', methods=['POST'])
+def completion():
+    result = {"done": target.is_reduce_done()}
+    if target.is_reduce_done():
+      result["result"] = target.reduce_result
+    return json.dumps(result)
 
 if __name__ == '__main__':
     sat = int(sys.argv[1])
