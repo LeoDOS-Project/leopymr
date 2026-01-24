@@ -2,7 +2,18 @@
 NAME=$1
 MAX_SAT=${MAX_SAT:-3}
 MAX_ORB=${MAX_ORB:-2}
-echo "services:" > compose${NAME}.yaml
+cat > compose${NAME}.yaml <<ANY
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    environment:
+      MAX_ORB: "${MAX_ORB}"
+      MAX_SAT: "${MAX_SAT}"
+    ports:
+      - "8089:8089"
+ANY
 
 for i in `seq 1 ${MAX_ORB}`; do
 cat > orb.tmp <<ANY
