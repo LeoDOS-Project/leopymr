@@ -8,17 +8,13 @@ from config import config
 import os
 from hungarian import hungarian
 
-def node_cost(hops, dist, ignore_distance,distances):
-    return hops
-
-def bipartite_scheduler(tasks,nodes,ignore_distance):
+def bipartite_scheduler(tasks,nodes):
     weights = []
     for t in tasks:
       costs = []
       for n in nodes:
         (distance,hops,distances,sats_passed) = get_node_dist_hops(t,n)
-        cost = node_cost(hops,distance,ignore_distance,distances)
-        costs.append(cost)
+        costs.append(hops)
       weights.append(costs)
     assignment, total_cost = hungarian(weights)  
     picks = [ None for _ in range(0,len(nodes)) ]
@@ -26,10 +22,20 @@ def bipartite_scheduler(tasks,nodes,ignore_distance):
       picks[int(assignment[i][1])] = int(assignment[i][0])
     return picks
 
-def allocate(sat_tasks, sat_nodes):
+def random_scheduler(tasks,nodes):
+    indexes = list(range(0,len(tasks)))
+    random.shuffle(indexes)
+    return indexes
+
+def allocate(sat_tasks, sat_nodes, allocator):
   tasks = list(map(lambda x: sat_to_node(x),sat_tasks))
   nodes = list(map(lambda x: sat_to_node(x),sat_nodes))
-  task_indexes = bipartite_scheduler(tasks,nodes,True)
+
+  if allocator == "random":
+    task_indexes = random_scheduler(tasks,nodes)
+  elif allocator == "bipartite":
+    task_indexes = bipartite_scheduler(tasks,nodes)
+
   allocation = []
   n = 0
   for t in task_indexes:

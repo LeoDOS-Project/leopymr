@@ -8,6 +8,7 @@ import json
 import requests
 import threading
 import random
+import time
 
 app = Flask(__name__)
 target = None 
@@ -91,30 +92,43 @@ def submit():
   sat_processors = aoi_sats[collectors:collectors*2]
 
   # initiate collect phase on task nodes
-  for sat_task in sat_tasks:
-    data = {"messagid":0,"action":"collect","target": sat_task}
-    host,port = sat2host(sat_task)
-    threading.Thread(target=send_data,args=(host,port,"send",data)).start()
-  print(f"DEBUG: Sat Tasks {sat_tasks} Processors {sat_processors}")
-  allocations = allocate(sat_tasks, sat_processors)
+  #for sat_task in sat_tasks:
+  #  data = {"messagid":0,"action":"collect","target": sat_task}
+  #  host,port = sat2host(sat_task)
+  #  threading.Thread(target=send_data,args=(host,port,"send",data)).start()
+  #print(f"DEBUG: Sat Tasks {sat_tasks} Processors {sat_processors}")
+  allocator = data["allocator"]
+  allocations = allocate(sat_tasks, sat_processors,allocator)
 
   target.set_expected_map_count(len(allocations))
   # allocate map tasks
+  i = 0
+  job_start = time.time()
   for allocation in allocations:
+    i += 1
     task = allocation[0]
     processor = allocation[1]
-    data = {"reducer": target.get_id(),"action":"map","target": processor, "collector": task}
+    data = {"meta_data": {
+                 "collect_task": "doccollector",
+                 "data_id": i,
+                 "job_start": job_start,
+                 "filename": "data/sample.txt",
+                 "map_task": "wordcountmapper",
+                 "reduce_task":"sumreducer"
+            },
+            "reducer": target.get_id(),"action":"map","target": processor, "collector": task}
     print(f"DEBUG: Submitting allocation {allocation} Map Task {data}")
     host,port = sat2host(processor)
     threading.Thread(target=send_data,args=(host,port,"send",data)).start()
 
-  return json.dumps({"allocations":allocations})
+  return json.dumps({"allocations":allocations,"allocator": allocator})
  
 @app.route('/completion', methods=['POST'])
 def completion():
     result = {"done": target.is_reduce_done()}
     if target.is_reduce_done():
       result["result"] = target.reduce_result
+      result["job_time"] = target.job_time
     return json.dumps(result)
 
 if __name__ == '__main__':
