@@ -16,4 +16,14 @@ Example job submission script is in `submit.py`
 and results can be collected with `completion.sh`
 script.
 
+## Architecture
+Each plane is represented by a separate
+container in the same constellation docker network.
+Each satellite is a process within the plane container.
+A gateway REST reserver is exposed outside the constellation
+to submit requests and obtain results.
+The create constellation command above generates
+a docker-compose script that can bring up and down the
+testbed. All code is written in native python
+lwith minimal external dependencies.
  
