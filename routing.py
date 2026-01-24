@@ -99,7 +99,7 @@ def adjust_overflow(s):
     return (1,s[1])
   if s[1] == 0:
     return (s[0],config.MAX_ORB)
-  if s[1] > config.MAX_SAT:
+  if s[1] > config.MAX_ORB:
     return (s[0],1)
   return (s[0],s[1])
 
