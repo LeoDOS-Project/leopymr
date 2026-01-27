@@ -18,6 +18,8 @@ responses = {}
 def send_data(host, port, path, data):
   if 'action' in data and data['action'] == "collect_data":
     print("DEBUG: SEND_COLLECT_DATA")
+  if 'action' in data and data['action'] == "reduce_data":
+    print("DEBUG: SEND_REDUCE_DATA")
   requests.post(f"http://{host}:{port}/{path}", json=data)
 
 def sat2host(sat):
@@ -90,11 +92,11 @@ def submit():
   aoi_sats = data["aoi"]
   sat_tasks = aoi_sats[:collectors]
   sat_processors = aoi_sats[collectors:collectors*2]
+  reducer = data.get("reducer")
 
   allocator = data["allocator"]
   allocations = allocate(sat_tasks, sat_processors,allocator)
 
-  target.set_expected_map_count(len(allocations))
   # allocate map tasks
   i = 0
   job_start = time.time()
@@ -113,7 +115,13 @@ def submit():
                  "map_task": "wordcountmapper",
                  "reduce_task":"sumreducer"
             },
-            "reducer": target.get_id(),"action":"map","target": processor, "collector": task}
+            "action":"map","target": processor, "collector": task}
+    if reducer is None:
+        reducer = target.get_id()
+    else:
+        target.remote_reducer = reducer
+    target.set_expected_map_count(len(allocations))
+    data["reducer"] = reducer
     print(f"DEBUG: Submitting allocation {allocation} Map Task {data}")
     host,port = sat2host(processor)
     threading.Thread(target=send_data,args=(host,port,"send",data)).start()
@@ -122,6 +130,9 @@ def submit():
  
 @app.route('/completion', methods=['POST'])
 def completion():
+    if not target.remote_reducer is None:
+      data = {"meta_data":{},"action":"get_reduce_result","los": target.get_id()}
+      isl.send(target.remote_reducer,data)
     result = {"done": target.is_reduce_done()}
     if target.is_reduce_done():
       result["result"] = target.reduce_result

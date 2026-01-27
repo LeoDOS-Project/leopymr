@@ -16,6 +16,7 @@ class Satellite:
     self.reduced_data = []
     self.reduce_result = {}
     self.reduce_done = False
+    self.remote_reducer = None
   def dispatch(self,payload):
     action = payload["action"]
     print(f"DEBUG: Dispatching {action} on {self.get_id()}")
@@ -31,6 +32,11 @@ class Satellite:
       return self.reduce_data(payload)
     if action == "get_reduce_result":
       return self.get_reduce_result(payload)
+    if action == "reduce_response":
+      return self.reduce_response(payload)
+    if action == "set_map_count":
+      self.expected_map_count = payload["data"]["map_count"]
+      return
     return {"error":"Unkown action"}
   def echo(self,payload):
     return {"me":(self.sat,self.orb),"incoming": payload}
@@ -57,10 +63,24 @@ class Satellite:
       self.reduce_done = True
       self.job_time = time.time() - payload["meta_data"]["job_start"]
   def get_reduce_result(self,payload):
-    return self.reduce_result
+    los = payload["los"]
+    result = {"done": self.is_reduce_done()}
+    if self.is_reduce_done():
+        result["result"] = self.reduce_result
+        result["job_time"] = self.job_time
+    self.isl.send(los,{"meta_data": payload["meta_data"], "action":"reduce_response","data": result, "reducer": self.get_id()})
+    return None
+  def reduce_response(self,payload):
+      self.reduce_done = payload["data"]["done"]
+      if payload["data"]["done"]:
+          self.reduce_result = payload["data"]["result"]
+          self.job_time = payload["data"]["job_time"]
   def set_expected_map_count(self, expected_count):
      self.expected_map_count = expected_count
      print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
+     if not self.remote_reducer is None:
+       self.isl.send(self.remote_reducer,{"meta_data": {}, "action":"set_map_count","data": {"map_count":expected_count}})
+
   def is_map_done(self):
      return self.expected_map_count == self.map_count
   def is_reduce_done(self):
