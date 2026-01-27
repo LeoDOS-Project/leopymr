@@ -16,7 +16,8 @@ Start up constellation:
 ## Submit jobs
 ```
 usage: submit.py [-h] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT]
-                 [-ma MAXSAT] [-c COLLECTORS]
+                 [-ma MAXSAT] [-c COLLECTORS] [-ct COLLECTTASK] [-mt MAPTASK]
+                 [-rt REDUCETASK]
 
 Submits collect mapreduce task
 
@@ -31,6 +32,12 @@ options:
   -ma, --maxsat MAXSAT  max aoi grid index
   -c, --collectors COLLECTORS
                         total collectors (and mappers)
+  -ct, --collecttask COLLECTTASK
+                        collector task
+  -mt, --maptask MAPTASK
+                        mapper task
+  -rt, --reducetask REDUCETASK
+                        reducer task
 ```
 Job results can be retrieved with `./completion.sh`
 
