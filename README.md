@@ -16,6 +16,25 @@ Example job submission script is in `submit.py`
 and results can be collected with `completion.sh`
 script.
 
+## Submit jobs
+```
+usage: submit.py [-h] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT]
+                 [-ma MAXSAT] [-c COLLECTORS]
+
+Submits collect mapreduce task
+
+options:
+  -h, --help            show this help message and exit
+  -a, --allocator {bipartite,random}
+                        map allocator
+  -s, --seed SEED       random aoi shuffle seed
+  -r, --reducetype {los,center}
+                        reduce placement
+  -mi, --minsat MINSAT  min aoi grid index
+  -ma, --maxsat MAXSAT  max aoi grid index
+  -c, --collectors COLLECTORS
+                        total collectors (and mappers)```
+
 ## Architecture
 Each plane is represented by a separate
 container in the same constellation docker network.
