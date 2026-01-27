@@ -18,8 +18,10 @@ responses = {}
 def send_data(host, port, path, data):
   if 'action' in data and data['action'] == "collect_data":
     print("DEBUG: SEND_COLLECT_DATA")
+    time.sleep(0.2)
   if 'action' in data and data['action'] == "reduce_data":
     print("DEBUG: SEND_REDUCE_DATA")
+    time.sleep(0.2)
   requests.post(f"http://{host}:{port}/{path}", json=data)
 
 def sat2host(sat):

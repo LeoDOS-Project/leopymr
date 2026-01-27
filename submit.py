@@ -95,7 +95,6 @@ if __name__ == "__main__":
     o += aoi[c][1]
 
   center = [int(s/collectors),int(o/collectors)]
-  print(center)
   data = {
         "collectors":collectors,
         "aoi":aoi,
@@ -109,4 +108,4 @@ if __name__ == "__main__":
     data["reducer"] = center
 
   res = requests.post(f"http://localhost:8089/submit", json=data)
-  print(res.json())
+  print(json.dumps(res.json()))
