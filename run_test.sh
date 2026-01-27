@@ -6,7 +6,7 @@ SEED=$RANDOM
 for BENCH in $BENCHES; do
   ./up.sh test
   sleep 15
-  python3 submit.py $BENCH $SEED los
+  python3 submit.py -a $BENCH -s $SEED -r los
   sleep 15
   VAL=`./job_time.sh`
   echo "$BENCH $VAL $ITER" >> result.dat
