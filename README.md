@@ -33,7 +33,9 @@ options:
   -mi, --minsat MINSAT  min aoi grid index
   -ma, --maxsat MAXSAT  max aoi grid index
   -c, --collectors COLLECTORS
-                        total collectors (and mappers)```
+                        total collectors (and mappers)
+```
+Job results can be retrieved with `./completion.sh`
 
 ## Architecture
 Each plane is represented by a separate
