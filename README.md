@@ -12,9 +12,6 @@ Start up constellation:
 ```
 ./up.sh myconstellation
 ```
-Example job submission script is in `submit.py`
-and results can be collected with `completion.sh`
-script.
 
 ## Submit jobs
 ```
