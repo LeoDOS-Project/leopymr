@@ -2,7 +2,7 @@ import sys
 import os
 from flask import Flask, request
 from satellite import Satellite
-from routing import get_direction, add_direction, node_to_sat, sat_to_node
+from routing import get_direction, add_direction, node_to_sat, sat_to_node, get_dist_hops
 from allocation import allocate
 import json
 import requests
@@ -16,6 +16,8 @@ target = None
 responses = {}
 
 def send_data(host, port, path, data):
+  if 'action' in data and data['action'] == "collect_data":
+    print("DEBUG: SEND_COLLECT_DATA")
   requests.post(f"http://{host}:{port}/{path}", json=data)
 
 def sat2host(sat):
@@ -86,17 +88,9 @@ def submit():
   data = request.get_json(force=True)
   collectors = data["collectors"]
   aoi_sats = data["aoi"]
-
-  random.shuffle(aoi_sats)
   sat_tasks = aoi_sats[:collectors]
   sat_processors = aoi_sats[collectors:collectors*2]
 
-  # initiate collect phase on task nodes
-  #for sat_task in sat_tasks:
-  #  data = {"messagid":0,"action":"collect","target": sat_task}
-  #  host,port = sat2host(sat_task)
-  #  threading.Thread(target=send_data,args=(host,port,"send",data)).start()
-  #print(f"DEBUG: Sat Tasks {sat_tasks} Processors {sat_processors}")
   allocator = data["allocator"]
   allocations = allocate(sat_tasks, sat_processors,allocator)
 
@@ -104,10 +98,13 @@ def submit():
   # allocate map tasks
   i = 0
   job_start = time.time()
+  distance = 0
   for allocation in allocations:
     i += 1
     task = allocation[0]
     processor = allocation[1]
+    (_,hops,_,_) = get_dist_hops(task, processor)
+    distance += hops
     data = {"meta_data": {
                  "collect_task": "doccollector",
                  "data_id": i,
@@ -121,7 +118,7 @@ def submit():
     host,port = sat2host(processor)
     threading.Thread(target=send_data,args=(host,port,"send",data)).start()
 
-  return json.dumps({"allocations":allocations,"allocator": allocator})
+  return json.dumps({"allocations":allocations,"allocator": allocator, "distance": distance})
  
 @app.route('/completion', methods=['POST'])
 def completion():

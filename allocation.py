@@ -36,9 +36,10 @@ def allocate(sat_tasks, sat_nodes, allocator):
   elif allocator == "bipartite":
     task_indexes = bipartite_scheduler(tasks,nodes)
 
+  print(f"DEBUG: {allocator} Mappings",task_indexes)
   allocation = []
   n = 0
   for t in task_indexes:
-    allocation.append([node_to_sat(tasks[task_indexes[t]]),node_to_sat(nodes[n])])
+    allocation.append([node_to_sat(tasks[t]),node_to_sat(nodes[n])])
     n += 1
   return allocation
