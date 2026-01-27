@@ -96,6 +96,18 @@ def submit():
 
   allocator = data["allocator"]
   allocations = allocate(sat_tasks, sat_processors,allocator)
+  if "collect_task" in data:
+    collect_task = data["collect_task"]
+  else:
+    collect_task = "doccollector"
+  if "map_task" in data:
+    map_task = data["map_task"]
+  else:
+    map_task = data["wordcountmapper"]
+  if "reduce_task" in data:
+    reduce_task = data["reduce_task"]
+  else:
+    reduce_task = "sumreducer" 
 
   # allocate map tasks
   i = 0
@@ -109,12 +121,12 @@ def submit():
     (_,hops,_,_) = get_dist_hops(task, processor)
     distance += hops
     data = {"meta_data": {
-                 "collect_task": "doccollector",
+                 "collect_task": collect_task,
                  "data_id": i,
                  "job_start": job_start,
                  "filename": "data/sample.txt",
-                 "map_task": "wordcountmapper",
-                 "reduce_task":"sumreducer"
+                 "map_task": map_task,
+                 "reduce_task": reduce_task
             },
             "action":"map","target": processor, "collector": task}
     if reducer is None:

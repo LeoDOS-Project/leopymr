@@ -51,6 +51,24 @@ if __name__ == "__main__":
         default=50,
         help="total collectors (and mappers)",
         type=int)
+  parser.add_argument(
+        '-ct',
+        '--collecttask',
+        default='doccollector',
+        help="collector task",
+        type=str)
+  parser.add_argument(
+        '-mt',
+        '--maptask',
+        default='wordcountmapper',
+        help="mapper task",
+        type=str)
+  parser.add_argument(
+        '-rt',
+        '--reducetask',
+        default='sumreducer',
+        help="reducer task",
+        type=str)
 
   args = parser.parse_args()
 
@@ -81,7 +99,10 @@ if __name__ == "__main__":
   data = {
         "collectors":collectors,
         "aoi":aoi,
-        "allocator":allocator
+        "allocator": allocator,
+        "collect_task": args.collecttask,
+        "map_task": args.maptask,
+        "reduce_task": args.reducetask,
         }
 
   if reduce_type == "center":
