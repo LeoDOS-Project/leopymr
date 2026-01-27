@@ -101,6 +101,7 @@ def submit():
   i = 0
   job_start = time.time()
   distance = 0
+  reduce_distance = 0
   for allocation in allocations:
     i += 1
     task = allocation[0]
@@ -117,16 +118,21 @@ def submit():
             },
             "action":"map","target": processor, "collector": task}
     if reducer is None:
-        reducer = target.get_id()
+        reducer = tuple(target.get_id())
     else:
+        reducer = tuple(reducer)
         target.remote_reducer = reducer
+    print(f"DEBUG: REDUCE HOPS from {processor} to {reducer}")
+    (_,reduce_hops,_,_) = get_dist_hops(processor,reducer)
+    reduce_distance += reduce_hops
+
     target.set_expected_map_count(len(allocations))
     data["reducer"] = reducer
     print(f"DEBUG: Submitting allocation {allocation} Map Task {data}")
     host,port = sat2host(processor)
     threading.Thread(target=send_data,args=(host,port,"send",data)).start()
 
-  return json.dumps({"allocations":allocations,"allocator": allocator, "distance": distance})
+  return json.dumps({"allocations":allocations,"allocator": allocator, "distance": distance, "reduce_distance": reduce_distance})
  
 @app.route('/completion', methods=['POST'])
 def completion():
