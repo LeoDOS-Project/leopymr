@@ -110,16 +110,29 @@ def submit():
     reduce_task = "sumreducer" 
 
   # allocate map tasks
-  i = 0
-  job_start = time.time()
   distance = 0
   reduce_distance = 0
   for allocation in allocations:
-    i += 1
     task = allocation[0]
     processor = allocation[1]
     (_,hops,_,_) = get_dist_hops(task, processor)
     distance += hops
+    (_,reduce_hops,_,_) = get_dist_hops(processor,tuple(reducer))
+    reduce_distance += reduce_hops
+  if reducer is None or reducer == target.get_id():
+    print(f"DEBUG: LOS REDUCER {target.get_id()}")
+    reducer = target.get_id()
+  else:
+    target.remote_reducer = reducer
+  target.set_expected_map_count(len(allocations))
+
+  time.sleep(5)
+  job_start = time.time()
+  i = 0
+  for allocation in allocations:
+    i += 1
+    task = allocation[0]
+    processor = allocation[1]
     data = {"meta_data": {
                  "collect_task": collect_task,
                  "data_id": i,
@@ -129,20 +142,12 @@ def submit():
                  "reduce_task": reduce_task
             },
             "action":"map","target": processor, "collector": task}
-    if reducer is None or reducer == target.get_id():
-        print(f"DEBUG: LOS REDUCER {target.get_id()}")
-        reducer = target.get_id()
-    else:
-        target.remote_reducer = reducer
     print(f"DEBUG: REDUCE HOPS from {processor} to {reducer}")
-    (_,reduce_hops,_,_) = get_dist_hops(processor,tuple(reducer))
-    reduce_distance += reduce_hops
-
-    target.set_expected_map_count(len(allocations))
     data["reducer"] = reducer
     print(f"DEBUG: Submitting allocation {allocation} Map Task {data}")
     host,port = sat2host(processor)
     threading.Thread(target=send_data,args=(host,port,"send",data)).start()
+
 
   return json.dumps({"reducer": reducer,"los": target.get_id(), "allocations":allocations,"allocator": allocator, "distance": distance, "reduce_distance": reduce_distance})
  
