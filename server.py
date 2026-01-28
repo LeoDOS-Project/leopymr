@@ -18,10 +18,8 @@ responses = {}
 def send_data(host, port, path, data):
   if 'action' in data and data['action'] == "collect_data":
     print("DEBUG: SEND_COLLECT_DATA")
-    time.sleep(0.2)
   if 'action' in data and data['action'] == "reduce_data":
     print("DEBUG: SEND_REDUCE_DATA")
-    time.sleep(0.2)
   requests.post(f"http://{host}:{port}/{path}", json=data)
 
 def sat2host(sat):
@@ -131,13 +129,13 @@ def submit():
                  "reduce_task": reduce_task
             },
             "action":"map","target": processor, "collector": task}
-    if reducer is None:
-        reducer = tuple(target.get_id())
+    if reducer is None or reducer == target.get_id():
+        print(f"DEBUG: LOS REDUCER {target.get_id()}")
+        reducer = target.get_id()
     else:
-        reducer = tuple(reducer)
         target.remote_reducer = reducer
     print(f"DEBUG: REDUCE HOPS from {processor} to {reducer}")
-    (_,reduce_hops,_,_) = get_dist_hops(processor,reducer)
+    (_,reduce_hops,_,_) = get_dist_hops(processor,tuple(reducer))
     reduce_distance += reduce_hops
 
     target.set_expected_map_count(len(allocations))
@@ -146,7 +144,7 @@ def submit():
     host,port = sat2host(processor)
     threading.Thread(target=send_data,args=(host,port,"send",data)).start()
 
-  return json.dumps({"allocations":allocations,"allocator": allocator, "distance": distance, "reduce_distance": reduce_distance})
+  return json.dumps({"reducer": reducer,"los": target.get_id(), "allocations":allocations,"allocator": allocator, "distance": distance, "reduce_distance": reduce_distance})
  
 @app.route('/completion', methods=['POST'])
 def completion():

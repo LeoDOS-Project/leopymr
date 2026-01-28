@@ -76,10 +76,11 @@ class Satellite:
           self.reduce_result = payload["data"]["result"]
           self.job_time = payload["data"]["job_time"]
   def set_expected_map_count(self, expected_count):
-     self.expected_map_count = expected_count
-     print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
      if not self.remote_reducer is None:
        self.isl.send(self.remote_reducer,{"meta_data": {}, "action":"set_map_count","data": {"map_count":expected_count}})
+     else:
+       print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
+       self.expected_map_count = expected_count
 
   def is_map_done(self):
      return self.expected_map_count == self.map_count

@@ -36,19 +36,19 @@ if __name__ == "__main__":
   parser.add_argument(
         '-mi',
         '--minsat',
-        default=2,
+        default=5,
         help="min aoi grid index",
         type=int)
   parser.add_argument(
         '-ma',
         '--maxsat',
-        default=18,
+        default=15,
         help="max aoi grid index",
         type=int)
   parser.add_argument(
         '-c',
         '--collectors',
-        default=50,
+        default=40,
         help="total collectors (and mappers)",
         type=int)
   parser.add_argument(
@@ -106,6 +106,8 @@ if __name__ == "__main__":
 
   if reduce_type == "center":
     data["reducer"] = center
+  else:
+    data["reducer"] = [1,1]
 
   res = requests.post(f"http://localhost:8089/submit", json=data)
   print(json.dumps(res.json()))
