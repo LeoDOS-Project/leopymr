@@ -50,3 +50,16 @@ a docker-compose script that can bring up and down the
 testbed. All code is written in native python
 lwith minimal external dependencies.
  
+## Paper
+[Lightspeed Data Compute for the Space Era](https://arxiv.org/abs/2601.17589).
+```
+@misc{sandholm2026lightspeeddatacomputespace,
+      title={Lightspeed Data Compute for the Space Era}, 
+      author={Thomas Sandholm and Bernardo A. Huberman and Klas Segeljakt and Paris Carbone},
+      year={2026},
+      eprint={2601.17589},
+      archivePrefix={arXiv},
+      primaryClass={cs.DC},
+      url={https://arxiv.org/abs/2601.17589}, 
+}
+```
