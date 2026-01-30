@@ -15,14 +15,13 @@ Start up constellation:
 
 ## Submit jobs
 ```
-usage: submit.py [-h] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT]
-                 [-ma MAXSAT] [-c COLLECTORS] [-ct COLLECTTASK] [-mt MAPTASK]
-                 [-rt REDUCETASK]
+usage: job.py [-h] [--result] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT] [-c COLLECTORS] [-ct COLLECTTASK] [-mt MAPTASK] [-rt REDUCETASK]
 
-Submits collect mapreduce task
+Submits and get results from collect mapreduce task
 
 options:
   -h, --help            show this help message and exit
+  --result              Get job result
   -a, --allocator {bipartite,random}
                         map allocator
   -s, --seed SEED       random aoi shuffle seed
@@ -39,7 +38,6 @@ options:
   -rt, --reducetask REDUCETASK
                         reducer task
 ```
-Job results can be retrieved with `./completion.sh`
 
 ## Architecture
 Each plane is represented by a separate

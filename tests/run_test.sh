@@ -6,9 +6,9 @@ for ITER in `seq 1 10`; do
 SEED=$RANDOM
 for BENCH in $BENCHES; do
   for PLACEMENT in $PLACEMENTS; do
-  ./up.sh test
+  ../up.sh test
   sleep 20
-  python3 submit.py -a $BENCH -s $SEED -r ${PLACEMENT} > submit.json
+  python3 ../job.py -a $BENCH -s $SEED -r ${PLACEMENT} > submit.json
   DIST=`cat submit.json | jq .distance`
   REDDIST=`cat submit.json | jq .reduce_distance`
   sleep 25

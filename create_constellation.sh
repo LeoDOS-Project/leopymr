@@ -1,4 +1,6 @@
 #! /bin/bash
+DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd ${DIR}
 NAME=$1
 MAX_SAT=${MAX_SAT:-3}
 MAX_ORB=${MAX_ORB:-2}
@@ -6,7 +8,7 @@ cat > compose${NAME}.yaml <<ANY
 services:
   gateway:
     build:
-      context: .
+      context: docker
       dockerfile: Dockerfile.gateway
     environment:
       MAX_ORB: "${MAX_ORB}"
@@ -19,7 +21,7 @@ for i in `seq 1 ${MAX_ORB}`; do
 cat > orb.tmp <<ANY
   orb${i}:
     build:
-      context: .
+      context: docker
       dockerfile: Dockerfile.sat
     environment:
       ORB: "${i}"

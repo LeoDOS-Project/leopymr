@@ -11,9 +11,11 @@ SERVER = "http://localhost:8089/submit"
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(
-        prog='submit.py',
-        description='Submits collect mapreduce task')
+        prog='job.py',
+        description='Submits and get results from collect mapreduce task')
 
+  parser.add_argument('--result', action='store_true', help='Get job result')
+  
   parser.add_argument(
         '-a',
         '--allocator',
@@ -109,5 +111,8 @@ if __name__ == "__main__":
   else:
     data["reducer"] = [1,1]
 
-  res = requests.post(f"http://localhost:8089/submit", json=data)
+  if args.result:
+    res = requests.post(f"http://localhost:8089/completion", json=data)
+  else:
+    res = requests.post(f"http://localhost:8089/submit", json=data)
   print(json.dumps(res.json()))
