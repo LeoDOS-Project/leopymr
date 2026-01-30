@@ -6,7 +6,7 @@ from comp import comp_finder
 import time
 
 class Satellite:
-  def __init__(self, sat, orb, isl):
+  def __init__(self, sat, orb, isl, jobid):
     self.sat = sat
     self.orb = orb
     self.isl = isl
@@ -17,11 +17,10 @@ class Satellite:
     self.reduce_result = {}
     self.reduce_done = False
     self.remote_reducer = None
+    self.jobid = jobid
   def dispatch(self,payload):
     action = payload["action"]
     print(f"DEBUG: Dispatching {action} on {self.get_id()}")
-    if action == "echo":
-      return self.echo(payload)
     if action == "collect":
       return self.collect(payload)
     if action == "map":
@@ -35,11 +34,10 @@ class Satellite:
     if action == "reduce_response":
       return self.reduce_response(payload)
     if action == "set_map_count":
+      print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
       self.expected_map_count = payload["data"]["map_count"]
       return
     return {"error":"Unkown action"}
-  def echo(self,payload):
-    return {"me":(self.sat,self.orb),"incoming": payload}
   def start_map(self,payload):
     self.reducer = payload["reducer"]
     self.isl.send(payload["collector"],{"meta_data": payload["meta_data"], "action":"collect","mapper": self.get_id()})
@@ -69,7 +67,6 @@ class Satellite:
         result["result"] = self.reduce_result
         result["job_time"] = self.job_time
     self.isl.send(los,{"meta_data": payload["meta_data"], "action":"reduce_response","data": result, "reducer": self.get_id()})
-    return None
   def reduce_response(self,payload):
       self.reduce_done = payload["data"]["done"]
       if payload["data"]["done"]:
@@ -77,11 +74,10 @@ class Satellite:
           self.job_time = payload["data"]["job_time"]
   def set_expected_map_count(self, expected_count):
      if not self.remote_reducer is None:
-       self.isl.send(self.remote_reducer,{"meta_data": {}, "action":"set_map_count","data": {"map_count":expected_count}})
+       self.isl.send(self.remote_reducer,{"meta_data": {"jobid":self.jobid}, "action":"set_map_count","data": {"map_count":expected_count}})
      else:
        print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
        self.expected_map_count = expected_count
-
   def is_map_done(self):
      return self.expected_map_count == self.map_count
   def is_reduce_done(self):

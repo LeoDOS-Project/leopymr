@@ -14,7 +14,12 @@ if __name__ == "__main__":
         prog='job.py',
         description='Submits and get results from collect mapreduce task')
 
-  parser.add_argument('--result', action='store_true', help='Get job result')
+  parser.add_argument(
+        '-i',
+        '--id',
+        default=None,
+        help="job id (specify to return results of job)",
+        type=str)
   
   parser.add_argument(
         '-a',
@@ -111,8 +116,9 @@ if __name__ == "__main__":
   else:
     data["reducer"] = [1,1]
 
-  if args.result:
-    res = requests.post(f"http://localhost:8089/completion", json=data)
-  else:
+  if args.id is None:
     res = requests.post(f"http://localhost:8089/submit", json=data)
+  else:
+    data = {"jobid": args.id}
+    res = requests.post(f"http://localhost:8089/completion", json=data)
   print(json.dumps(res.json()))

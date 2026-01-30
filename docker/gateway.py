@@ -45,8 +45,9 @@ def submit():
  
 @app.route('/completion', methods=['POST'])
 def completion():
+  data = request.get_json(force=True)
   host,port = sat2host([1,1])
-  res = send_data(host,port,"completion",{})
+  res = send_data(host,port,"completion",data)
   return json.dumps(res.json())
 
 if __name__ == '__main__':

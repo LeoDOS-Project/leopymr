@@ -15,13 +15,14 @@ Start up constellation:
 
 ## Submit jobs
 ```
-usage: job.py [-h] [--result] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT] [-c COLLECTORS] [-ct COLLECTTASK] [-mt MAPTASK] [-rt REDUCETASK]
+usage: job.py [-h] [-i ID] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT] [-c COLLECTORS]
+              [-ct COLLECTTASK] [-mt MAPTASK] [-rt REDUCETASK]
 
 Submits and get results from collect mapreduce task
 
 options:
   -h, --help            show this help message and exit
-  --result              Get job result
+  -i, --id ID           job id (specify to return results of job)
   -a, --allocator {bipartite,random}
                         map allocator
   -s, --seed SEED       random aoi shuffle seed

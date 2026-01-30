@@ -9,12 +9,22 @@ import requests
 import threading
 import random
 import time
+import uuid
 
 app = Flask(__name__)
-target = None 
 
-responses = {}
+target_config = None
+targets = {}
 
+def get_target(jobid=None):
+  if jobid is None:
+    jobid = str(uuid.uuid4())
+    targets[jobid] =  Satellite(target_config["sat"],target_config["orb"],target_config["isl"],jobid)
+  if jobid not in targets: 
+    targets[jobid] =  Satellite(target_config["sat"],target_config["orb"],target_config["isl"],jobid)
+  return targets[jobid]
+
+  
 def send_data(host, port, path, data):
   if 'action' in data and data['action'] == "collect_data":
     print("DEBUG: SEND_COLLECT_DATA")
@@ -33,11 +43,12 @@ class ISL:
     pass
   def send(self,sat,payload): 
     payload["target"] = sat
-    if target.get_id != sat:
-      direction = get_direction(target.get_id(), sat)
-      next_sat = add_direction(target.get_id(),direction)
+    target_id = target_config["id"]
+    if target_id != sat:
+      direction = get_direction(target_id, sat)
+      next_sat = add_direction(target_id, direction)
       action = payload["action"]
-      print(f"DEBUG: ISL from {target.get_id()} to {sat} direction {direction} next {next_sat} action {action}") 
+      print(f"DEBUG: ISL from {target_id} to {sat} direction {direction} next {next_sat} action {action}") 
     else:
       next_sat = sat
     host,port = sat2host(next_sat)
@@ -50,23 +61,23 @@ def send():
   data = request.get_json(force=True)
   direction = None
   next_sat = None
-  if data["target"] == target.get_id():
-    result = target.dispatch(data)
-    if "messageid" in data and data["messageid"] != 0 and not result is None:
-      responses[data["messageid"]] = {"result": result, "payload":data}
+  if data["target"] == target_config["id"]:
+    target = get_target(data["meta_data"]["jobid"])
+    target.dispatch(data)
   else:
-    direction = get_direction(target.get_id(), data["target"])
-    next_sat = add_direction(target.get_id(),direction)
+    target_id = target_config["id"]
+    direction = get_direction(target_id, data["target"])
+    next_sat = add_direction(target_id, direction)
     host,port = sat2host(next_sat)
     if not "route" in data:
       data["route"] = []
-    data["route"].append(target.get_id())
+    data["route"].append(target_id)
     sat =  data["target"]
     action = data["action"]
     map_log = ""
     if "mapper" in data:
       map_log = "Mapper %s" % data["mapper"]
-    print(f"DEBUG: Route {map_log} from {target.get_id()} to {sat} direction {direction} next {next_sat} action {action}") 
+    print(f"DEBUG: Route {map_log} from {target_id} to {sat} direction {direction} next {next_sat} action {action}") 
     threading.Thread(target=send_data,args=(host,port,"send",data)).start()
 
   output = {"status":"OK","direction": direction, "next_sat": next_sat}
@@ -75,16 +86,6 @@ def send():
   return json.dumps(output)
 
 
-@app.route('/response', methods=['POST'])
-def response():
-  data = request.get_json(force=True)
-  mid = data["messageid"]
-  if mid in responses:
-    result = responses[mid]
-    del responses[mid]
-    return json.dumps({"status":"OK","result": result})
-  return json.dumps({"error":"NOT_FOUND"})
-  
 @app.route('/submit', methods=['POST'])
 def submit():
   data = request.get_json(force=True)
@@ -108,6 +109,8 @@ def submit():
     reduce_task = data["reduce_task"]
   else:
     reduce_task = "sumreducer" 
+
+  target = get_target()
 
   # allocate map tasks
   distance = 0
@@ -133,30 +136,35 @@ def submit():
     i += 1
     task = allocation[0]
     processor = allocation[1]
-    data = {"meta_data": {
+    payload = {"meta_data": {
                  "collect_task": collect_task,
                  "data_id": i,
                  "job_start": job_start,
+                 "jobid": target.jobid,
                  "filename": "data/sample.txt",
                  "map_task": map_task,
                  "reduce_task": reduce_task
             },
             "action":"map","target": processor, "collector": task}
     print(f"DEBUG: REDUCE HOPS from {processor} to {reducer}")
-    data["reducer"] = reducer
+    payload["reducer"] = reducer
     print(f"DEBUG: Submitting allocation {allocation} Map Task {data}")
     host,port = sat2host(processor)
-    threading.Thread(target=send_data,args=(host,port,"send",data)).start()
+    threading.Thread(target=send_data,args=(host,port,"send",payload)).start()
 
 
-  return json.dumps({"reducer": reducer,"los": target.get_id(), "allocations":allocations,"allocator": allocator, "distance": distance, "reduce_distance": reduce_distance})
+  return json.dumps({"reducer": reducer,"los": target.get_id(), "allocations":allocations,"allocator": allocator, "distance": distance, "reduce_distance": reduce_distance, "jobid": target.jobid})
  
 @app.route('/completion', methods=['POST'])
 def completion():
+    data = request.get_json(force=True)
+    target = get_target(data["jobid"])
+    sent_request = False
     if not target.remote_reducer is None:
-      data = {"meta_data":{},"action":"get_reduce_result","los": target.get_id()}
-      isl.send(target.remote_reducer,data)
-    result = {"done": target.is_reduce_done()}
+      payload = {"meta_data":{"jobid":data["jobid"]},"action":"get_reduce_result","los": target.get_id()}
+      isl.send(target.remote_reducer,payload)
+      sent_request = True
+    result = {"done": target.is_reduce_done(), "jobid": data["jobid"], "sent_request": sent_request}
     if target.is_reduce_done():
       result["result"] = target.reduce_result
       result["job_time"] = target.job_time
@@ -166,5 +174,5 @@ if __name__ == '__main__':
     sat = int(sys.argv[1])
     orb = int(sys.argv[2])
     port = 8080 + sat
-    target = Satellite(sat,orb,isl)
+    target_config = {"sat": sat,"orb":orb,"isl": isl, "id": [sat,orb]}
     app.run(host='0.0.0.0',debug=False, port=port)
