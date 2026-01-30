@@ -6,7 +6,7 @@ class DocCollector:
   def collect(self,payload):
     data = []
     data_id = payload["meta_data"]["data_id"]
-    with open(payload["meta_data"]["filename"]) as f:
+    with open(payload["meta_data"]["job_data"]["filename"]) as f:
       i = 1
       for line in f:
         if i % data_id == 0:

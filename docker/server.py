@@ -141,9 +141,9 @@ def submit():
                  "data_id": i,
                  "job_start": job_start,
                  "jobid": target.jobid,
-                 "filename": "data/sample.txt",
                  "map_task": map_task,
-                 "reduce_task": reduce_task
+                 "reduce_task": reduce_task,
+                 "job_data": data.get("job_data")
             },
             "action":"map","target": processor, "collector": task}
     print(f"DEBUG: REDUCE HOPS from {processor} to {reducer}")

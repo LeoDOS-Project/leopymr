@@ -76,6 +76,12 @@ if __name__ == "__main__":
         default='sumreducer',
         help="reducer task",
         type=str)
+  parser.add_argument(
+        '-d',
+        '--data',
+        default=None,
+        help="job data file (json)",
+        type=str)
 
   args = parser.parse_args()
 
@@ -108,8 +114,13 @@ if __name__ == "__main__":
         "allocator": allocator,
         "collect_task": args.collecttask,
         "map_task": args.maptask,
-        "reduce_task": args.reducetask,
+        "reduce_task": args.reducetask
         }
+  if args.data is None:
+    data["job_data"] = {"filename": "data/sample.txt"}
+  else:
+    with open(args.data) as f:
+      data["job_data"] = json.loads(f.read())
 
   if reduce_type == "center":
     data["reducer"] = center

@@ -15,8 +15,8 @@ Start up constellation:
 
 ## Submit jobs
 ```
-usage: job.py [-h] [-i ID] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT] [-c COLLECTORS]
-              [-ct COLLECTTASK] [-mt MAPTASK] [-rt REDUCETASK]
+usage: job.py [-h] [-i ID] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT] [-c COLLECTORS] [-ct COLLECTTASK] [-mt MAPTASK]
+              [-rt REDUCETASK] [-d DATA]
 
 Submits and get results from collect mapreduce task
 
@@ -38,6 +38,7 @@ options:
                         mapper task
   -rt, --reducetask REDUCETASK
                         reducer task
+  -d, --data DATA       job data file (json)
 ```
 
 ## Architecture
