@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Processor Mapping Algorithm Visualization</title>
+    <link rel="stylesheet" href="demo.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Task Processor Mapping Algorithm <span class="highlight">Viz</span></h1>
+            <p class="subtitle">Interactive Step-by-Step Visualization</p>
+        </header>
+
+        <main>
+            <section class="controls-panel">
+                <div class="card glass">
+                    <h2>Configuration</h2>
+                    <div class="input-group">
+                        <label for="matrix-size">Size (N x N)</label>
+                        <input type="number" id="matrix-size" value="3" min="2" max="10">
+                    </div>
+                    <div class="button-group">
+                        <button id="btn-generate" class="btn primary">Generate Random</button>
+                        <button id="btn-input" class="btn secondary">Manual Input</button>
+                    </div>
+                </div>
+
+                <div class="card glass">
+                    <h2>Controls</h2>
+                    <div class="control-actions">
+                        <button id="btn-prev" class="btn icon-btn" disabled title="Previous Step">←</button>
+                        <button id="btn-play" class="btn icon-btn" title="Auto Play">▶</button>
+                        <button id="btn-next" class="btn icon-btn" title="Next Step">→</button>
+                        <button id="btn-reset" class="btn icon-btn danger" title="Reset">↻</button>
+                    </div>
+                    <div class="speed-control">
+                        <label for="speed-range">Speed</label>
+                        <input type="range" id="speed-range" min="100" max="2000" value="1000">
+                    </div>
+                </div>
+
+                <div class="card glass info-card">
+                    <h2>Current State</h2>
+                    <div id="step-description">Initializing...</div>
+                    <div class="legend">
+                        <div class="legend-item"><span class="dot star"></span> Starred (0*)</div>
+                        <div class="legend-item"><span class="dot prime"></span> Primed (0')</div>
+                        <div class="legend-item"><span class="dot covered"></span> Covered Line</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="visualization-panel">
+                <div id="matrix-container" class="matrix-grid">
+                    <!-- Matrix will be generated here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for manual input -->
+    <div id="input-modal" class="modal hidden">
+        <div class="modal-content glass">
+            <h2>Enter Cost Matrix</h2>
+            <p>Enter values separated by commas, rows by newlines.</p>
+            <textarea id="manual-matrix-input" rows="5" placeholder="8, 7, 9&#10;4, 9, 5&#10;6, 8, 7"></textarea>
+            <div class="modal-actions">
+                <button id="btn-cancel-input" class="btn secondary">Cancel</button>
+                <button id="btn-apply-input" class="btn primary">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="demo.js"></script>
+</body>
+</html>
