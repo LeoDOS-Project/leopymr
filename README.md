@@ -49,8 +49,7 @@ A gateway REST reserver is exposed outside the constellation
 to submit requests and obtain results.
 The create constellation command above generates
 a docker-compose script that can bring up and down the
-testbed. All code is written in native python
-lwith minimal external dependencies.
+testbed. All code is written in native python with minimal external dependencies.
  
 ## Paper
 [Lightspeed Data Compute for the Space Era](https://arxiv.org/abs/2601.17589).
