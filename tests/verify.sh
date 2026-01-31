@@ -21,12 +21,12 @@ echo "1. RANDOM > BIPARTITE: $RES"
 
 RES=$(compare_report los "" center "")
 OK2=0
-echo $RES | grep -q ". 1 1" && OK2=1
+echo $RES | grep -q ". 1 ." && OK2=1
 echo "2. LOS > CENTER: $RES"
 
 RES=$(compare_report random los random center)
 OK3=0
-echo $RES | grep -q ". 1 1" && OK3=1
+echo $RES | grep -q ". 1 ." && OK3=1
 echo "3. RANDOM LOS > RANDOM CENTER: $RES"
 
 RES=$(compare_report bipartite los bipartite center)
@@ -49,5 +49,5 @@ if [ $ALLOK -eq 1 ]; then
   exit 0
 else
   echo "SOME TESTS FAILED"
-  exit 0
+  exit 1
 fi

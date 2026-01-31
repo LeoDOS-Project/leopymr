@@ -1,4 +1,5 @@
 # leopymr - SpaceCoMP implementation in Python
+[![CoMP Test](https://github.com/LeoDOS-Project/leopymr/actions/workflows/test.yml/badge.svg)](https://github.com/LeoDOS-Project/leopymr/actions/workflows/test.yml)
 
 ## Getting Started
 Create constellation testbed:

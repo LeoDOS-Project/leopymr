@@ -95,8 +95,8 @@ if __name__ == "__main__":
   maxsat = args.maxsat
 
   aoi = []
-  for sat in range(minsat,maxsat):
-    for orb in range(minsat,maxsat):
+  for sat in range(minsat,maxsat+1):
+    for orb in range(minsat,maxsat+1):
       aoi.append([sat,orb])
 
   random.shuffle(aoi)
