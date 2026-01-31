@@ -24,6 +24,7 @@ for BENCH in $BENCHES; do
 done
 done
 done
+../logs.sh test
 ./verify.sh
 RETURN_CODE=$?
 echo "VERIFICATION $RETURN_CODE"
