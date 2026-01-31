@@ -12,7 +12,7 @@ SERVER = "http://localhost:8089/submit"
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(
         prog='job.py',
-        description='Submits and get results from collect mapreduce task')
+        description='Submits and gets results from collect mapreduce task')
 
   parser.add_argument(
         '-i',

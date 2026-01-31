@@ -18,7 +18,7 @@ Start up constellation:
 usage: job.py [-h] [-i ID] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT] [-c COLLECTORS] [-ct COLLECTTASK] [-mt MAPTASK]
               [-rt REDUCETASK] [-d DATA]
 
-Submits and get results from collect mapreduce task
+Submits and gets results from collect mapreduce task
 
 options:
   -h, --help            show this help message and exit
