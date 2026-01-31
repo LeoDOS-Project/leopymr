@@ -1,8 +1,10 @@
 #! /bin/bash
 BENCHES="random bipartite"
 PLACEMENTS="los center"
+ITERATIONS=${ITERATIONS:-1}
 echo "BENCH PLACEMENT DISTANCE REDUCEDISTANCE VAL ITER" > result.dat
-for ITER in `seq 1 10`; do
+MAX_SAT=22 MAX_ORB=22 ../create_constellation.sh test
+for ITER in `seq 1 $ITERATIONS`; do
 SEED=$RANDOM
 for BENCH in $BENCHES; do
   for PLACEMENT in $PLACEMENTS; do
@@ -20,3 +22,4 @@ for BENCH in $BENCHES; do
 done
 done
 done
+./verify.sh

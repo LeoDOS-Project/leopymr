@@ -129,7 +129,6 @@ def submit():
     target.remote_reducer = reducer
   target.set_expected_map_count(len(allocations))
 
-  time.sleep(5)
   job_start = time.time()
   i = 0
   for allocation in allocations:
