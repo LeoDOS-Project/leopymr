@@ -54,7 +54,7 @@ testbed. All code is written in native python with minimal external dependencies
 All ISL communication is asynchronous, but the server executions
 are synchronous. An example collector/mapper/reducer was implemented
 to showcase a simple distributed wordcount job.
-Custome tasks can be added into `docker/collectors`, `docker/mappers` and
+Custom tasks can be added into `docker/collectors`, `docker/mappers` and
 `docker/reducers`.
  
 ## Paper
