@@ -2,8 +2,8 @@
 DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd ${DIR}
 NAME=$1
-MAX_SAT=${MAX_SAT:-3}
-MAX_ORB=${MAX_ORB:-2}
+MAX_SAT=${MAX_SAT:-11}
+MAX_ORB=${MAX_ORB:-11}
 cat > compose${NAME}.yaml <<ANY
 services:
   gateway:

@@ -43,19 +43,19 @@ if __name__ == "__main__":
   parser.add_argument(
         '-mi',
         '--minsat',
-        default=5,
+        default=3,
         help="min aoi grid index",
         type=int)
   parser.add_argument(
         '-ma',
         '--maxsat',
-        default=15,
+        default=8,
         help="max aoi grid index",
         type=int)
   parser.add_argument(
         '-c',
         '--collectors',
-        default=40,
+        default=11,
         help="total collectors (and mappers)",
         type=int)
   parser.add_argument(

@@ -115,6 +115,7 @@ def submit():
   # allocate map tasks
   distance = 0
   reduce_distance = 0
+  data_size = len(allocations)
   for allocation in allocations:
     task = allocation[0]
     processor = allocation[1]
@@ -138,6 +139,7 @@ def submit():
     payload = {"meta_data": {
                  "collect_task": collect_task,
                  "data_id": i,
+                 "data_size": data_size,
                  "job_start": job_start,
                  "jobid": target.jobid,
                  "map_task": map_task,
