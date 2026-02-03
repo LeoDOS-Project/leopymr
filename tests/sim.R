@@ -13,7 +13,7 @@ data.bi.center = data.bi[data.bi$PLACEMENT=="center",]
 
 png("plots/sim.png")
 
-plot(data.rand.los$ITER,data.rand.los$VAL,ylim=c(0,1),type='n',ylab="Time (s)",xlab="Iteration")
+plot(data.rand.los$ITER,data.rand.los$VAL,ylim=c(0,max(data.rand.los$VAL)),type='n',ylab="Time (s)",xlab="Iteration")
 lines(data.rand.los$ITER,data.rand.los$VAL,col="red")
 points(data.rand.los$ITER,data.rand.los$VAL,col="red")
 lines(data.rand.center$ITER,data.rand.center$VAL,col="pink")
