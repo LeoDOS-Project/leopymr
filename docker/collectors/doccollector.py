@@ -17,7 +17,16 @@ class DocCollector:
     print(f"DEBUG doccollect file size {file_size} chunk size {chunk_size} from chunk {from_chunk}")
     with open(filename) as f:
       f.seek(from_chunk)
-      data = f.read(chunk_size).split("\n")
+      data = f.read(chunk_size)
+      if from_chunk != 0:
+        line_start = data.find('\n')
+        data = data[line_start:]
+      while data[-1] != "\n":
+        ch = f.read(1)  
+        if not ch:
+          break
+        data += ch
+      data = data.split('\n')
     return data
 
 def get_task():
