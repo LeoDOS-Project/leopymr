@@ -46,11 +46,16 @@ options:
 Each plane is represented by a separate
 container in the same constellation docker network.
 Each satellite is a process within the plane container.
-A gateway REST reserver is exposed outside the constellation
+A gateway REST server is exposed outside the constellation
 to submit requests and obtain results.
 The create constellation command above generates
 a docker-compose script that can bring up and down the
 testbed. All code is written in native python with minimal external dependencies.
+All ISL communication is asynchronous, but the server executions
+are synchronous. An example collector/mapper/reducer was implemented
+to showcase a simple distributed wordcount job.
+Custome tasks can be added into `docker/collectors`, `docker/mappers` and
+`docker/reducers`.
  
 ## Paper
 [Lightspeed Data Compute for the Space Era](https://arxiv.org/abs/2601.17589).
