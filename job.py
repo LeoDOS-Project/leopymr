@@ -5,6 +5,7 @@ import json
 import sys
 import random
 import argparse
+import time
 
 SERVER = "http://localhost:8089/submit"
 
@@ -132,4 +133,9 @@ if __name__ == "__main__":
   else:
     data = {"jobid": args.id}
     res = requests.post(f"http://localhost:8089/completion", json=data)
+    if not res.json()["done"]:
+      time.sleep(0.5)
+      res = requests.post(f"http://localhost:8089/completion", json=data)
+
+  
   print(json.dumps(res.json()))
