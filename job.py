@@ -83,6 +83,13 @@ if __name__ == "__main__":
         default=None,
         help="job data file (json)",
         type=str)
+  parser.add_argument(
+        '-mr',
+        '--maxrecords',
+        default=1024,
+        help="max records to collect before streaming to mapper",
+        type=int)
+
 
   args = parser.parse_args()
 
@@ -115,7 +122,8 @@ if __name__ == "__main__":
         "allocator": allocator,
         "collect_task": args.collecttask,
         "map_task": args.maptask,
-        "reduce_task": args.reducetask
+        "reduce_task": args.reducetask,
+        "max_collect_records": args.maxrecords,
         }
   if args.data is None:
     data["job_data"] = {"filename": "data/sample.txt"}

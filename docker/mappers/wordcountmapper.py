@@ -10,7 +10,7 @@ class WordCountMapper:
         if not word in data:
           data[word] = 0
         data[word] += 1
-    return data
+    yield data
 
 def get_task():
   return WordCountMapper()

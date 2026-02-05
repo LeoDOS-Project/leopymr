@@ -18,40 +18,49 @@ class Satellite:
     self.reduce_done = False
     self.remote_reducer = None
     self.jobid = jobid
+    self.total_mapped = 0
   def dispatch(self,payload):
     action = payload["action"]
     print(f"DEBUG: Dispatching {action} on {self.get_id()}")
     if action == "collect":
-      return self.collect(payload)
-    if action == "map":
-      return self.start_map(payload)
-    if action == "collect_data":
-      return self.collect_data(payload)
-    if action == "reduce_data":
-      return self.reduce_data(payload)
-    if action == "get_reduce_result":
-      return self.get_reduce_result(payload)
-    if action == "reduce_response":
-      return self.reduce_response(payload)
-    if action == "set_map_count":
-      print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
+      self.collect(payload)
+    elif action == "map":
+      self.start_map(payload)
+    elif action == "collect_data":
+      self.collect_data(payload)
+    elif action == "reduce_data":
+      self.reduce_data(payload)
+    elif action == "get_reduce_result":
+      self.get_reduce_result(payload)
+    elif action == "reduce_response":
+      self.reduce_response(payload)
+    elif action == "set_map_count":
       self.expected_map_count = payload["data"]["map_count"]
-      return
-    return {"error":"Unkown action"}
+      print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
+    else:
+      print(f"DEBUG: Unknown action {action}")
   def start_map(self,payload):
     self.reducer = payload["reducer"]
     self.isl.send(payload["collector"],{"meta_data": payload["meta_data"], "action":"collect","mapper": self.get_id()})
   def collect(self,payload):
     collect_task = comp_finder.find_collect(payload["meta_data"]["collect_task"])
-    data = collect_task.collect(payload)
-    self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data","last": True, "data": data, "collector": self.get_id()})
+    total_collected = 0
+    data = []
+    for record in collect_task.collect(payload):
+      total_collected += 1
+      data.append(record)
+      if len(data) >= payload["meta_data"]["max_collect_records"]:
+        self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "end_collect": False, "collected_index": total_collected,"data": data, "collector": self.get_id()})
+        data = []
+    self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "collected_index": total_collected, "end_collect": True, "data": data, "collector": self.get_id()})
   def collect_data(self,payload):
     map_task = comp_finder.find_map(payload["meta_data"]["map_task"])
-    mapped_data = map_task.run_map(payload)
-    print(f"DEBUG: Sending Data from Mapper {self.get_id()} to Reducer {self.reducer}")
-    self.isl.send(self.reducer,{"meta_data": payload["meta_data"], "action":"reduce_data","data": mapped_data, "mapper": self.get_id()})
+    for mapped_data in map_task.run_map(payload):
+      self.total_mapped += 1
+      self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce_data","end_map": payload["end_collect"], "data": mapped_data, "mapper": self.get_id()})
   def reduce_data(self,payload):
-    self.map_count += 1
+    if payload["end_map"]:
+      self.map_count += 1
     mapper = payload["mapper"]
     print(f"DEBUG: Got Data from Mapper {mapper} count {self.map_count} in sat {self.get_id()}")
     self.reduced_data.append(payload)

@@ -109,6 +109,11 @@ def submit():
     reduce_task = data["reduce_task"]
   else:
     reduce_task = "sumreducer" 
+  if "max_collect_records" in data:
+    max_collect_records = data["max_collect_records"]
+  else:
+    max_collect_records = 1024
+
 
   target = get_target()
 
@@ -143,6 +148,7 @@ def submit():
                  "job_start": job_start,
                  "jobid": target.jobid,
                  "map_task": map_task,
+                 "max_collect_records": max_collect_records,
                  "reduce_task": reduce_task,
                  "job_data": data.get("job_data")
             },
