@@ -26,7 +26,7 @@ class SarCollector:
       fname = file.split('/')[-1].split('.tiff')[0]
       file_path = f"data/output{data_id}/denoised/denoised_{fname}.png"
       file = {fname: open(file_path,'rb')}
-      yield {"value": fname + ".png", "file": (fname + ".png", open(file_path,'rb'))}
+      yield {"value": fname + ".png", "file": {"name": fname + ".png", "stream": open(file_path,'rb')}}
 
 def get_task():
   return SarCollector()

@@ -52,7 +52,7 @@ class Satellite:
     for record in collect_task.collect(payload):
       total_collected += 1
       if isinstance(record, dict) and "file" in record:
-        files[record["file"][0]] = record["file"][1]
+        files[record["file"]["name"]] = record["file"]["stream"]
         data.append(record["value"])  
       else:
         data.append(record)
