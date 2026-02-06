@@ -2,3 +2,9 @@ Flask==3.1.2
 Werkzeug==3.1.4
 requests
 numpy
+deepdespeckling==0.8
+torch==2.10.0
+torchvision==0.25.0
+mediapipe
+opencv-contrib-python
+opencv-python-headless

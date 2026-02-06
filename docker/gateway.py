@@ -1,7 +1,6 @@
 import sys
 import os
 from flask import Flask, request
-from satellite import Satellite
 from routing import get_direction, add_direction, node_to_sat, sat_to_node
 from allocation import allocate
 import json
