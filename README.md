@@ -61,7 +61,7 @@ Custom tasks can be added into `docker/collectors`, `docker/mappers` and
  
 ## Paper
 [Lightspeed Data Compute for the Space Era](https://arxiv.org/abs/2601.17589).
-```
+```bibtex
 @article{sandholm2026lightspeed,
   title={Lightspeed Data Compute for the Space Era},
   author={Sandholm, Thomas and Huberman, Bernardo A and Segeljakt, Klas and Carbone, Paris},
