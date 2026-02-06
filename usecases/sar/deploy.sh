@@ -10,12 +10,14 @@ for i in `seq 1 4`; do
   mkdir -p ../../docker/data/output${i}
 done
 cp sarcollector.py ../../docker/collectors
-i=4
+cp sarmapper.py ../../docker/mappers
+i=3
 rm -f test-data/files/abetow*.tiff
+rm -f test-data/files/umbra*.tiff
 for TIFF in `ls test-data/files/*.tiff`; do
-  IDX=$(expr 1 + $i % 4)
+  IDX=$(expr 1 + $i % 3)
   echo "$IDX $TIFF"
   cp ${TIFF} ../../docker/data/task${IDX}/
   i=`expr $i + 1`
 done
-echo "Submit example: python3 job.py -mi 1 -ma 5 -c 4 -ct sarcollector -r los"
+echo "Submit example: python3 job.py -mi 1 -ma 4 -c 3 -ct sarcollector -mt sarmapper -r los"

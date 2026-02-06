@@ -10,6 +10,8 @@ import threading
 import random
 import time
 import uuid
+import io
+from werkzeug.datastructures import FileStorage
 
 app = Flask(__name__)
 
@@ -24,13 +26,22 @@ def get_target(jobid=None):
     targets[jobid] =  Satellite(target_config["sat"],target_config["orb"],target_config["isl"],jobid)
   return targets[jobid]
 
-  
-def send_data(host, port, path, data):
+def filedump(files):
+  dump = {}
+  for k in files.keys():
+    dump[k] = FileStorage(io.BytesIO(files[k].read()),k)
+  return dump
+
+def send_data(host, port, path, data, files={}):
   if 'action' in data and data['action'] == "collect_data":
     print("DEBUG: SEND_COLLECT_DATA")
   if 'action' in data and data['action'] == "reduce_data":
     print("DEBUG: SEND_REDUCE_DATA")
-  requests.post(f"http://{host}:{port}/{path}", json=data)
+  if len(files) > 0:
+    files["json"] = io.StringIO(json.dumps(data))
+    requests.post(f"http://{host}:{port}/{path}", files=files)
+  else:
+    requests.post(f"http://{host}:{port}/{path}", json=data)
 
 def sat2host(sat):
   port = 8080 + sat[0]
@@ -41,7 +52,7 @@ def sat2host(sat):
 class ISL:
   def __init__(self):
     pass
-  def send(self,sat,payload): 
+  def send(self,sat,payload,files={}): 
     payload["target"] = sat
     target_id = target_config["id"]
     if target_id != sat:
@@ -52,18 +63,23 @@ class ISL:
     else:
       next_sat = sat
     host,port = sat2host(next_sat)
-    threading.Thread(target=send_data,args=(host,port,"send",payload)).start()
+    threading.Thread(target=send_data,args=(host,port,"send",payload,files)).start()
 
 isl = ISL()
 
 @app.route('/send', methods=['POST'])
 def send():
-  data = request.get_json(force=True)
+  if len(request.files) == 0:
+    data = request.get_json(force=True)
+  else:
+    data = json.loads(request.files['json'].read())
+    print(f"DEBUG: no json data",data, "files:", request.files)
   direction = None
   next_sat = None
   if data["target"] == target_config["id"]:
     target = get_target(data["meta_data"]["jobid"])
-    target.dispatch(data)
+    print(f"DEBUG: Request Files {request.files}")
+    target.dispatch(data, filedump(request.files))
   else:
     target_id = target_config["id"]
     direction = get_direction(target_id, data["target"])
@@ -78,7 +94,7 @@ def send():
     if "mapper" in data:
       map_log = "Mapper %s" % data["mapper"]
     print(f"DEBUG: Route {map_log} from {target_id} to {sat} direction {direction} next {next_sat} action {action}") 
-    threading.Thread(target=send_data,args=(host,port,"send",data)).start()
+    threading.Thread(target=send_data,args=(host,port,"send",data,filedump(request.files))).start()
 
   output = {"status":"OK","direction": direction, "next_sat": next_sat}
   if "messageid" in data:

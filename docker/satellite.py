@@ -19,7 +19,9 @@ class Satellite:
     self.remote_reducer = None
     self.jobid = jobid
     self.total_mapped = 0
-  def dispatch(self,payload):
+  def dispatch(self,payload, files):
+    if len(files) > 0:
+      payload["files"] = files
     action = payload["action"]
     print(f"DEBUG: Dispatching {action} on {self.get_id()}")
     if action == "collect":
@@ -46,13 +48,18 @@ class Satellite:
     collect_task = comp_finder.find_collect(payload["meta_data"]["collect_task"])
     total_collected = 0
     data = []
+    files = {}
     for record in collect_task.collect(payload):
       total_collected += 1
-      data.append(record)
+      if isinstance(record, dict) and "file" in record:
+        files[record["file"][0]] = record["file"][1]
+        data.append(record["value"])  
+      else:
+        data.append(record)
       if len(data) >= payload["meta_data"]["max_collect_records"]:
-        self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "end_collect": False, "collected_index": total_collected,"data": data, "collector": self.get_id()})
+        self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "end_collect": False, "collected_index": total_collected,"data": data, "collector": self.get_id()},files)
         data = []
-    self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "collected_index": total_collected, "end_collect": True, "data": data, "collector": self.get_id()})
+    self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "collected_index": total_collected, "end_collect": True, "data": data, "collector": self.get_id()},files)
   def collect_data(self,payload):
     map_task = comp_finder.find_map(payload["meta_data"]["map_task"])
     for mapped_data in map_task.run_map(payload):
@@ -85,8 +92,8 @@ class Satellite:
      if not self.remote_reducer is None:
        self.isl.send(self.remote_reducer,{"meta_data": {"jobid":self.jobid}, "action":"set_map_count","data": {"map_count":expected_count}})
      else:
-       print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
        self.expected_map_count = expected_count
+       print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
   def is_map_done(self):
      return self.expected_map_count == self.map_count
   def is_reduce_done(self):
