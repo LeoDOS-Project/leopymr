@@ -14,9 +14,8 @@ torch.serialization.add_safe_globals([numpy.core.multiarray.scalar,
 
 class SarCollector:
   def __init__(self):
-    self.delimiter = '\n'
+    pass
   def collect(self,payload):
-    data = []
     data_id = payload["meta_data"]["data_id"]
     image_path=f"data/task{data_id}"
     destination_directory=f"data/output{data_id}"
@@ -25,7 +24,6 @@ class SarCollector:
     for file in glob.glob(f"data/task{data_id}/*.tiff"):
       fname = file.split('/')[-1].split('.tiff')[0]
       file_path = f"data/output{data_id}/denoised/denoised_{fname}.png"
-      file = {fname: open(file_path,'rb')}
       yield {"value": fname + ".png", "file": {"name": fname + ".png", "stream": open(file_path,'rb')}}
 
 def get_task():
