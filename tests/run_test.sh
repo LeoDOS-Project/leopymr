@@ -4,7 +4,7 @@ cd ${DIR}
 BENCHES="random bipartite"
 PLACEMENTS="los center"
 ITERATIONS=${ITERATIONS:-1}
-echo "BENCH PLACEMENT DISTANCE REDUCEDISTANCE VAL ITER" > result.dat
+echo "BENCH PLACEMENT DISTANCE REDUCEDISTANCE VAL ITER" > test_result.dat
 MAX_SAT=11 MAX_ORB=11 ../create_constellation.sh test
 cat ../composetest.yaml
 for ITER in `seq 1 $ITERATIONS`; do
@@ -21,7 +21,7 @@ for BENCH in $BENCHES; do
   python3 ../job.py -i $JOBID
   sleep 5
   VAL=`python3 ../job.py -i $JOBID | jq .job_time`
-  echo "$BENCH ${PLACEMENT} ${DIST} ${REDDIST} $VAL $ITER" >> result.dat
+  echo "$BENCH ${PLACEMENT} ${DIST} ${REDDIST} $VAL $ITER" >> test_result.dat
 done
 done
 done
