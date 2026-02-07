@@ -19,4 +19,4 @@ for TIFF in `ls test-data/files/*.tiff`; do
   cp ${TIFF} ../../docker/data/task${IDX}/
   i=`expr $i + 1`
 done
-echo "Submit example: python3 job.py -mi 1 -ma 4 -c 3 -ct sarcollector -mt sarmapper -r los"
+echo "Submit example: python3 job.py -mi 1 -ma 4 -c 3 -ct sarcollector -mt sarmapper -r los -mr 1"

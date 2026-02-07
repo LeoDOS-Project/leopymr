@@ -59,9 +59,13 @@ class Satellite:
       if len(data) >= payload["meta_data"]["max_collect_records"]:
         self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "end_collect": False, "collected_index": total_collected,"data": data, "collector": self.get_id()},files)
         data = []
+        files = {}
     self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "collected_index": total_collected, "end_collect": True, "data": data, "collector": self.get_id()},files)
   def collect_data(self,payload):
     map_task = comp_finder.find_map(payload["meta_data"]["map_task"])
+    if payload["end_collect"] and "data" in payload and len(payload["data"]) == 0:
+      self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce_data","end_map": True, "mapper": self.get_id()})
+      return
     for mapped_data in map_task.run_map(payload):
       self.total_mapped += 1
       self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce_data","end_map": payload["end_collect"], "data": mapped_data, "mapper": self.get_id()})
@@ -70,7 +74,8 @@ class Satellite:
       self.map_count += 1
     mapper = payload["mapper"]
     print(f"DEBUG: Got Data from Mapper {mapper} count {self.map_count} in sat {self.get_id()}")
-    self.reduced_data.append(payload)
+    if "data" in payload:
+      self.reduced_data.append(payload)
     if self.is_map_done():
       reduce_task = comp_finder.find_reduce(payload["meta_data"]["reduce_task"])
       self.reduce_result = reduce_task.reduce(self.reduced_data)
