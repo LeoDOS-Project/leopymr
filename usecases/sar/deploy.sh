@@ -7,7 +7,6 @@ if [ ! -d test-data ]; then
 fi
 for i in `seq 1 4`; do
   mkdir -p ../../docker/data/task${i}
-  mkdir -p ../../docker/data/output${i}
 done
 cp sarcollector.py ../../docker/collectors
 cp sarmapper.py ../../docker/mappers
