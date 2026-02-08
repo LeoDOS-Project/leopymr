@@ -10,6 +10,8 @@ for i in `seq 1 4`; do
 done
 cp sarcollector.py ../../docker/collectors
 cp sarmapper.py ../../docker/mappers
+cp Dockerfile.sar ../../docker/
+cp requirements.txt.sar ../../docker/
 i=3
 rm -f test-data/files/abetow*.tiff
 rm -f test-data/files/umbra*.tiff
