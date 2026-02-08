@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from utils import log
 import glob,os
 import math
 from deepdespeckling.despeckling import despeckle
@@ -38,7 +39,7 @@ class SarCollector:
       stream = io.BytesIO(byte_arr_val)
       fname = image_path.split('/')[-1].split('.tiff')[0]
       output_name = fname + ".png"
-      print(f"DEBUG: sarcollector collected image {output_name} len {len(byte_arr_val)}")
+      log(f"sarcollector collected image {output_name} len {len(byte_arr_val)}",conext=payload)
       yield {"value": output_name, "file": {"name": output_name, "stream": stream}}
 
 def get_task():

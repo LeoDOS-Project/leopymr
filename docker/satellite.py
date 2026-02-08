@@ -23,6 +23,7 @@ class Satellite:
   def dispatch(self,payload, files):
     if len(files) > 0:
       payload["files"] = files
+    payload["target_sat"] = self
     action = payload["action"]
     log(f"Dispatching",sat=self,context=payload)
     if action == "collect":

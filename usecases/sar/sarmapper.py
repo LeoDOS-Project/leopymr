@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+from utils import log
 import glob,os
 import math
 from deepdespeckling.despeckling import despeckle
@@ -43,9 +44,9 @@ class SarMapper:
   def run_map(self,payload):
     data_id = payload["meta_data"]["data_id"]
     for fname in payload["data"]:
-      print(f"DEBUG sarmap checking {fname} idx {data_id}")
+      log(f"sarmap checking {fname} idx {data_id}",context=payload)
       detected_object = detect(payload["files"][fname])
-      print(f"DEBUG sarmap detected {detected_object} in {fname} idx {data_id}")
+      log(f"sarmap detected {detected_object} in {fname} idx {data_id}",context=payload)
       yield {detected_object:1}
 
 def get_task():
