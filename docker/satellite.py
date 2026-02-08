@@ -3,6 +3,7 @@ import routing
 import hungarian
 from config import config
 from comp import comp_finder
+from utils import log
 import time
 
 class Satellite:
@@ -23,7 +24,7 @@ class Satellite:
     if len(files) > 0:
       payload["files"] = files
     action = payload["action"]
-    print(f"DEBUG: Dispatching {action} on {self.get_id()}")
+    log(f"Dispatching",sat=self,context=payload)
     if action == "collect":
       self.collect(payload)
     elif action == "map":
@@ -38,9 +39,9 @@ class Satellite:
       self.reduce_response(payload)
     elif action == "set_map_count":
       self.expected_map_count = payload["data"]["map_count"]
-      print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
+      log(f"Setting expected map count {self.expected_map_count}",sat=self,context=payload)
     else:
-      print(f"DEBUG: Unknown action {action}")
+      log(f"Unknown action",sat=self,context=payload,verbosity=0)
   def start_map(self,payload):
     self.reducer = payload["reducer"]
     self.isl.send(payload["collector"],{"meta_data": payload["meta_data"], "action":"collect","mapper": self.get_id()})
@@ -73,7 +74,7 @@ class Satellite:
     if payload["end_map"]:
       self.map_count += 1
     mapper = payload["mapper"]
-    print(f"DEBUG: Got Data from Mapper {mapper} count {self.map_count} in sat {self.get_id()}")
+    log(f"Got Data from Mapper {mapper} count {self.map_count}",sat=self,context=payload)
     if "data" in payload:
       self.reduced_data.append(payload)
     if self.is_map_done():
@@ -98,7 +99,7 @@ class Satellite:
        self.isl.send(self.remote_reducer,{"meta_data": {"jobid":self.jobid}, "action":"set_map_count","data": {"map_count":expected_count}})
      else:
        self.expected_map_count = expected_count
-       print(f"DEBUG: Setting expected map count {self.expected_map_count} in sat {self.get_id()}")
+       log(f"Setting expected map count {self.expected_map_count}",sat=self)
   def is_map_done(self):
      return self.expected_map_count == self.map_count
   def is_reduce_done(self):

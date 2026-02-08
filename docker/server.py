@@ -4,6 +4,7 @@ from flask import Flask, request
 from satellite import Satellite
 from routing import get_direction, add_direction, node_to_sat, sat_to_node, get_dist_hops
 from allocation import allocate
+from utils import log
 import json
 import requests
 import threading
@@ -12,6 +13,7 @@ import time
 import uuid
 import io
 from werkzeug.datastructures import FileStorage
+
 
 app = Flask(__name__)
 
@@ -34,9 +36,9 @@ def filedump(files):
 
 def send_data(host, port, path, data, files={}):
   if 'action' in data and data['action'] == "collect_data":
-    print("DEBUG: SEND_COLLECT_DATA")
+    log("SEND_COLLECT_DATA",verbosity=2)
   if 'action' in data and data['action'] == "reduce_data":
-    print("DEBUG: SEND_REDUCE_DATA")
+    log("SEND_REDUCE_DATA",verbosity=2)
   if len(files) > 0:
     files["json"] = io.StringIO(json.dumps(data))
     requests.post(f"http://{host}:{port}/{path}", files=files)
@@ -59,7 +61,7 @@ class ISL:
       direction = get_direction(target_id, sat)
       next_sat = add_direction(target_id, direction)
       action = payload["action"]
-      print(f"DEBUG: ISL from {target_id} to {sat} direction {direction} next {next_sat} action {action}") 
+      log(f"ISL from {target_id} to {sat} direction {direction} next {next_sat}",context=payload) 
     else:
       next_sat = sat
     host,port = sat2host(next_sat)
@@ -73,12 +75,12 @@ def send():
     data = request.get_json(force=True)
   else:
     data = json.loads(request.files['json'].read())
-    print(f"DEBUG: no json data",data, "files:", request.files)
+    log(f"no json data {data} files: {request.files}",verbosity=3)
   direction = None
   next_sat = None
   if data["target"] == target_config["id"]:
     target = get_target(data["meta_data"]["jobid"])
-    print(f"DEBUG: Request Files {request.files}")
+    log(f"Request Files {request.files}",verbosity=3)
     target.dispatch(data, filedump(request.files))
   else:
     target_id = target_config["id"]
@@ -93,7 +95,7 @@ def send():
     map_log = ""
     if "mapper" in data:
       map_log = "Mapper %s" % data["mapper"]
-    print(f"DEBUG: Route {map_log} from {target_id} to {sat} direction {direction} next {next_sat} action {action}") 
+    log(f"Route {map_log} from {target_id} to {sat} direction {direction} next {next_sat}",context=data) 
     threading.Thread(target=send_data,args=(host,port,"send",data,filedump(request.files))).start()
 
   output = {"status":"OK","direction": direction, "next_sat": next_sat}
@@ -145,7 +147,7 @@ def submit():
     (_,reduce_hops,_,_) = get_dist_hops(processor,tuple(reducer))
     reduce_distance += reduce_hops
   if reducer is None or reducer == target.get_id():
-    print(f"DEBUG: LOS REDUCER {target.get_id()}")
+    log("LOS REDUCER",sat=target)
     reducer = target.get_id()
   else:
     target.remote_reducer = reducer
@@ -169,9 +171,9 @@ def submit():
                  "job_data": data.get("job_data")
             },
             "action":"map","target": processor, "collector": task}
-    print(f"DEBUG: REDUCE HOPS from {processor} to {reducer}")
+    log(f"REDUCE HOPS from {processor} to {reducer}")
     payload["reducer"] = reducer
-    print(f"DEBUG: Submitting allocation {allocation} Map Task {data}")
+    log(f"Submitting allocation {allocation} Map Task {data}")
     host,port = sat2host(processor)
     threading.Thread(target=send_data,args=(host,port,"send",payload)).start()
 

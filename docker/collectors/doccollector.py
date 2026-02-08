@@ -2,6 +2,7 @@
 
 import os
 import math
+from utils import log
 
 
 class DocCollector:
@@ -15,7 +16,7 @@ class DocCollector:
     file_size = os.path.getsize(filename)
     chunk_size = math.ceil(file_size/data_size)
     from_chunk = chunk_size * (data_id-1)
-    print(f"DEBUG doccollect file size {file_size} chunk size {chunk_size} from chunk {from_chunk}")
+    log(f"doccollect file size {file_size} chunk size {chunk_size} from chunk {from_chunk}",context=payload)
     skip_first = from_chunk != 0
     bytes_read = 0
     record = ""
@@ -29,7 +30,7 @@ class DocCollector:
           skip_first = False
           record = "" 
           if bytes_read >= chunk_size:
-            print(f"DEBUG doccollect file size {file_size} chunk size {chunk_size} from chunk {from_chunk} DONE {bytes_read}")
+            log(f"doccollect file size {file_size} chunk size {chunk_size} from chunk {from_chunk} DONE {bytes_read}",context=payload)
             return
         else:
           record += ch
@@ -37,7 +38,7 @@ class DocCollector:
         ch = f.read(1)
     if len(record) > 0:
       yield record
-    print(f"DEBUG doccollect file size {file_size} chunk size {chunk_size} from chunk {from_chunk} DONE {bytes_read} EOF")
+    log(f"doccollect file size {file_size} chunk size {chunk_size} from chunk {from_chunk} DONE {bytes_read} EOF",context=payload)
 
 def get_task():
   return DocCollector()

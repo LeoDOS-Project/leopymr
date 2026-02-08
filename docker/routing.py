@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 from config import config
+from utils import log
 import math
 import traceback
 
@@ -67,12 +68,12 @@ def get_direction(from_sat, to_sat):
     horizontal_direction = get_horizontal_direction(sat, target_sat)
     max_sat = config.MAX_SAT
     max_orb = config.MAX_ORB
-    #print(f"MAX_SAT {max_sat} MAX_ORB {max_orb} VERTICAL {vertical_direction} HORIZONTAL {horizontal_direction} from {from_sat} to {to_sat}")
+    log(f"MAX_SAT {max_sat} MAX_ORB {max_orb} VERTICAL {vertical_direction} HORIZONTAL {horizontal_direction} from {from_sat} to {to_sat}",verbosity=6)
 
     west_distance = orb_distance(add_direction(from_sat,WEST)[0])
     my_distance = orb_distance(from_sat[0])
     east_distance = orb_distance(add_direction(from_sat,EAST)[0])
-    #print(f"WEST {west_distance} MY {my_distance} EAST {east_distance}")
+    log(f"WEST {west_distance} MY {my_distance} EAST {east_distance}",verbosity=6)
 
     cross_over = west_distance > my_distance and east_distance > my_distance
 
@@ -154,7 +155,7 @@ def to_str(direction):
 def get_dist_hops(from_sat, to_sat):
     import sys
     if not valid_sat(from_sat) or not valid_sat(to_sat):
-        print(f"Invalid from to sats {from_sat} {to_sat}",file=sys.stderr)
+        log(f"Invalid from to sats {from_sat} {to_sat}",verbosity=0)
         traceback.print_stack()
         sys.exit(1)
     sats_passed = []
@@ -168,7 +169,7 @@ def get_dist_hops(from_sat, to_sat):
     if distance != 0:
       sats_passed.append(from_sat)
     i=1
-    #print(f"HOP {i} {to_str(direction)} DISTANCE {distance} DIRECTION {direction} NEW SAT {from_sat} TO SAT {to_sat}")
+    log(f"HOP {i} {to_str(direction)} DISTANCE {distance} DIRECTION {direction} NEW SAT {from_sat} TO SAT {to_sat}",verbosity=6)
     while to_sat != from_sat:
       direction = get_direction(from_sat,to_sat)
       distance = get_distance(direction, (sat_distance(), orb_distance(from_sat[0])))
@@ -177,9 +178,9 @@ def get_dist_hops(from_sat, to_sat):
       from_sat = add_direction(from_sat, direction)
       sats_passed.append(from_sat)
       i+=1
-      #print(f"HOP {i} {to_str(direction)} DISTANCE {distance} DIRECTION {direction} NEW SAT {from_sat} TO SAT {to_sat}")
+      log(f"HOP {i} {to_str(direction)} DISTANCE {distance} DIRECTION {direction} NEW SAT {from_sat} TO SAT {to_sat}",verbosity=6)
    
-    #print(f"Total Distance {tot_distance}m Hops {i}")
+    log(f"Total Distance {tot_distance}m Hops {i}",verbosity=6)
     return (tot_distance, i, distances, sats_passed)
 
 def node_to_sat(node):

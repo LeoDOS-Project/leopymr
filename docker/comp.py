@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 import glob
 import importlib
+from utils import log
 
 class CompFinder:
   def __init__(self):
@@ -20,7 +21,7 @@ class CompFinder:
   def register_collect(self, collect_name, collect_task):
     self.collect_tasks[collect_name] = collect_task
   def register(self, task_type, task_name, task):
-    print(f"DEBUG: registering {task_type} name {task_name} task {task}")
+    log(f"registering {task_type} name {task_name} task {task}",verbosity=2)
     if task_type == "mappers":
       self.register_map(task_name, task)
     elif task_type == "reducers":

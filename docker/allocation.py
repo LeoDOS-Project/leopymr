@@ -6,6 +6,7 @@ import math
 from config import config
 import os
 from hungarian import hungarian
+from utils import log
 
 def bipartite_scheduler(tasks,nodes):
     weights = []
@@ -35,7 +36,7 @@ def allocate(sat_tasks, sat_nodes, allocator):
   elif allocator == "bipartite":
     task_indexes = bipartite_scheduler(tasks,nodes)
 
-  print(f"DEBUG: {allocator} Mappings",task_indexes)
+  log(f"{allocator} Mappings {task_indexes}",verbosity=3)
   allocation = []
   n = 0
   for t in task_indexes:
