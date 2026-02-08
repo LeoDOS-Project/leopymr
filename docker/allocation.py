@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
 from routing import get_node_dist_hops, node_to_sat, sat_to_node
-import numpy as np
 import random
 import math
 from config import config

@@ -4,6 +4,7 @@ cd ${DIR}
 NAME=$1
 MAX_SAT=${MAX_SAT:-11}
 MAX_ORB=${MAX_ORB:-11}
+SAT_RT=${SAT_RT:-sat}
 cat > compose${NAME}.yaml <<ANY
 services:
   gateway:
@@ -22,7 +23,7 @@ cat > orb.tmp <<ANY
   orb${i}:
     build:
       context: docker
-      dockerfile: Dockerfile.sat
+      dockerfile: Dockerfile.${SAT_RT}
     environment:
       ORB: "${i}"
       MAX_ORB: "${MAX_ORB}"
