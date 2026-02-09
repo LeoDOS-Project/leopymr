@@ -39,7 +39,7 @@ class SarCollector:
       stream = io.BytesIO(byte_arr_val)
       fname = image_path.split('/')[-1].split('.tiff')[0]
       output_name = fname + ".png"
-      log(f"sarcollector collected image {output_name} len {len(byte_arr_val)}",conext=payload)
+      log(f"sarcollector collected image {output_name} len {len(byte_arr_val)}",context=payload)
       yield {"value": output_name, "file": {"name": output_name, "stream": stream}}
 
 def get_task():
