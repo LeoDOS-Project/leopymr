@@ -7,8 +7,6 @@ import random
 import argparse
 import time
 
-SERVER = "http://localhost:8089/submit"
-
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(
@@ -89,6 +87,12 @@ if __name__ == "__main__":
         default=1024,
         help="max records to collect before streaming to mapper",
         type=int)
+  parser.add_argument(
+        '-u',
+        '--url',
+        default="http://localhost:8089",
+        help="gateway server endpoint",
+        type=str)
 
 
   args = parser.parse_args()
@@ -137,13 +141,13 @@ if __name__ == "__main__":
     data["reducer"] = [1,1]
 
   if args.id is None:
-    res = requests.post(f"http://localhost:8089/submit", json=data)
+    res = requests.post(f"{args.url}/submit", json=data)
   else:
     data = {"jobid": args.id}
-    res = requests.post(f"http://localhost:8089/completion", json=data)
+    res = requests.post(f"{args.url}/completion", json=data)
     if not res.json()["done"]:
       time.sleep(0.5)
-      res = requests.post(f"http://localhost:8089/completion", json=data)
+      res = requests.post(f"{args.url}/completion", json=data)
 
   
   print(json.dumps(res.json()))

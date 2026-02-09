@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    leodos.service: gateway
+  name: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      leodos.service: gateway
+  template:
+    metadata:
+      labels:
+        leodos.service: gateway
+    spec:
+      containers:
+        - env:
+            - name: MAX_ORB
+              value: "2"
+            - name: MAX_SAT
+              value: "2"
+          image: ${REGISTRY}/leopymr-gateway
+          name: gateway
+          ports:
+            - containerPort: 8089
+              protocol: TCP
+      hostname: leodos-gateway
+      restartPolicy: Always

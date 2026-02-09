@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    leodos.service: orb2
+  name: orb2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      leodos.service: orb2
+  template:
+    metadata:
+      labels:
+        leodos.service: orb2
+    spec:
+      containers:
+        - env:
+            - name: MAX_ORB
+              value: "2"
+            - name: MAX_SAT
+              value: "2"
+            - name: ORB
+              value: "2"
+          image: ${REGISTRY}/leopymr-orb
+          name: orb2
+      hostname: orb2
+      restartPolicy: Always
