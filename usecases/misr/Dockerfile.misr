@@ -1,0 +1,8 @@
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y screen
+WORKDIR /server
+COPY requirements.txt.misr .
+RUN pip3 install --no-cache-dir -r requirements.txt.misr
+COPY . .
+CMD ["./start_orb.sh"]
