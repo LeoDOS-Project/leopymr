@@ -1,11 +1,11 @@
 # MISR Use Case
-This use case exemplifies how Multi-Image(Frame) Super Resolution (MISR)
-can be done with LeoCoMP. The collector simply converts a burts of images
-in format `dng` to `png` and streams them to the mapper.
+This use case exemplifies how Multi-Image/Frame Super Resolution (MISR)
+can be done with LeoCoMP. The collector simply converts a burst of images
+in the `dng` format to the `png` format and then streams them to the mapper.
 The mapper then uses the [Handheld Multi-Fram Super Resolution](https://sites.google.com/view/handheld-super-res/)
 algorithm to combine images sent from the collector into a single image. The single
 combined image is then sent to the reducer, which takes the images from all mappers
-and combines them in the same way (with the same algorithm) to procude a final
+and combines them in the same way (with the same algorithm) to produce a final
 output image.
 
 ## Sample Data
