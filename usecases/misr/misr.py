@@ -10,8 +10,6 @@ from torchvision import transforms
 # Configuration
 # ------------------------------------------------------------
 
-IMAGE_DIR = "./burst"
-OUTPUT_FILE = "super_resolved.png"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 UPSCALE = 1.0        # set >1.0 for digital zoom (e.g. 2.0)
 SIGMA = 1.0          # kernel width
@@ -81,69 +79,9 @@ def vectorized_super_resolve_tiled(
     return out
 
 
-def vectorized_super_resolve(frames, upscale=1.0, sigma=1.0):
-    """
-    frames: (T, 3, H, W)
-    returns: (3, H*upscale, W*upscale)
-    """
-    T, C, H, W = frames.shape
-    device = frames.device
-
-    Hh, Wh = int(H * upscale), int(W * upscale)
-
-    # 1. Upsample all frames
-    frames_up = F.interpolate(
-        frames,
-        size=(Hh, Wh),
-        mode="bilinear",
-        align_corners=False
-    )  # (T,3,Hh,Wh)
-
-    # 2. Extract 3x3 patches
-    patches = F.unfold(
-        frames_up.view(T * C, 1, Hh, Wh),
-        kernel_size=3,
-        padding=1
-    )
-
-    patches = patches.view(T, C, 9, Hh * Wh)  # (T,3,9,N)
-
-    # 3. Gaussian kernel
-    offsets = torch.tensor(
-        [(-1,-1), (-1,0), (-1,1),
-         ( 0,-1), ( 0,0), ( 0,1),
-         ( 1,-1), ( 1,0), ( 1,1)],
-        device=device,
-        dtype=torch.float32
-    )
-
-    d2 = offsets[:, 0]**2 + offsets[:, 1]**2
-    kernel = torch.exp(-d2 / (2 * sigma * sigma))  # (9,)
-    kernel = kernel.view(1, 1, 9, 1)
-
-    # 4. Weighted sum
-    weighted = patches * kernel
-    num = weighted.sum(dim=(0, 2))       # (3, N)
-    den = kernel.sum() * T
-
-    out = num / (den + 1e-6)
-
-    # 5. Reshape and RETURN
-    return out.view(C, Hh, Wh)
-
-
-
 # ------------------------------------------------------------
 # Image loading
 # ------------------------------------------------------------
-
-def load_burst(image_dir):
-    images = []
-    for name in sorted(os.listdir(image_dir)):
-        if name.lower().endswith((".png", ".jpg", ".jpeg")):
-            img = Image.open(os.path.join(image_dir, name)).convert("RGB")
-            images.append(transforms.ToTensor()(img))
-    return torch.stack(images)  # (T, 3, H, W)
 
 def load_files(files):
     from io import BytesIO
@@ -182,9 +120,6 @@ def warp(img, flow):
 import math
 def gaussian_kernel(dx, dy, sigma):
     return math.exp(-(dx*dx + dy*dy) / (2 * sigma * sigma))
-
-#def gaussian_kernel(dx, dy, sigma):
-#    return torch.exp(-(dx**2 + dy**2) / (2 * sigma**2))
 
 def super_resolve(frames, upscale=1.0):
     """
@@ -242,7 +177,6 @@ def misr_merge(files):
         for img in aligned
     ]).to(DEVICE)
 
-    #sr = super_resolve(aligned, UPSCALE)
     sr = vectorized_super_resolve_tiled(
       aligned,
       upscale=UPSCALE,
