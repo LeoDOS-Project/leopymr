@@ -16,14 +16,15 @@ Start up constellation:
 
 ## Submit jobs
 ```
-usage: job.py [-h] [-i ID] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT]
-              [-c COLLECTORS] [-ct COLLECTTASK] [-mt MAPTASK] [-rt REDUCETASK] [-d DATA] [-mr MAXRECORDS]
+usage: job.py [-h] [-i ID] [-f FILE] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT] [-c COLLECTORS]
+              [-ct COLLECTTASK] [-mt MAPTASK] [-rt REDUCETASK] [-d DATA] [-mr MAXRECORDS] [-u URL]
 
 Submits and gets results from collect mapreduce task
 
 options:
   -h, --help            show this help message and exit
   -i, --id ID           job id (specify to return results of job)
+  -f, --file FILE       can be used with job id to download a job result file
   -a, --allocator {bipartite,random}
                         map allocator
   -s, --seed SEED       random aoi shuffle seed
@@ -42,6 +43,7 @@ options:
   -d, --data DATA       job data file (json)
   -mr, --maxrecords MAXRECORDS
                         max records to collect before streaming to mapper
+  -u, --url URL         gateway server endpoint
 ```
 
 ## Architecture

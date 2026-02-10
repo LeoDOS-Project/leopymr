@@ -146,14 +146,14 @@ def load_burst(image_dir):
     return torch.stack(images)  # (T, 3, H, W)
 
 def load_files(files):
-    import StringIO
+    from io import BytesIO
     images = []
     for file in files:
-      buffer = StringIO.StringIO()
-      buffer.write(file.read())
-      buffer.seek(0)
-      img = Image.open(buffer)
-      images.append(transforms.ToTensor()(img))
+        buffer = BytesIO()
+        buffer.write(file.read())
+        buffer.seek(0)
+        img = Image.open(buffer)
+        images.append(transforms.ToTensor()(img))
     return torch.stack(images)  # (T, 3, H, W)
 
 # ------------------------------------------------------------

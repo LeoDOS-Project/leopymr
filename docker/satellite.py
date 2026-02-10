@@ -20,6 +20,7 @@ class Satellite:
     self.remote_reducer = None
     self.jobid = jobid
     self.total_mapped = 0
+    self.reduce_files = None
   def dispatch(self,payload, files):
     if len(files) > 0:
       payload["files"] = files
@@ -53,8 +54,8 @@ class Satellite:
     files = {}
     for record in collect_task.collect(payload):
       total_collected += 1
-      if isinstance(record, dict) and "file" in record:
-        files[record["file"]["name"]] = record["file"]["stream"]
+      if isinstance(record, dict) and "_COMP_FILE_" in record:
+        files[record["_COMP_FILE_"]["name"]] = record["_COMP_FILE_"]["stream"]
         data.append(record["value"])  
       else:
         data.append(record)
@@ -70,7 +71,12 @@ class Satellite:
       return
     for mapped_data in map_task.run_map(payload):
       self.total_mapped += 1
-      self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce_data","end_map": payload["end_collect"], "data": mapped_data, "mapper": self.get_id()})
+      if isinstance(mapped_data, dict) and "_COMP_FILE_" in mapped_data:
+        files = {}
+        files[mapped_data["_COMP_FILE_"]["name"]] = mapped_data["_COMP_FILE_"]["stream"]
+        self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce_data","end_map": payload["end_collect"], "data": mapped_data["value"], "mapper": self.get_id()},files)
+      else:
+        self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce_data","end_map": payload["end_collect"], "data": mapped_data, "mapper": self.get_id()})
   def reduce_data(self,payload):
     if payload["end_map"]:
       self.map_count += 1
@@ -81,19 +87,30 @@ class Satellite:
     if self.is_map_done():
       reduce_task = comp_finder.find_reduce(payload["meta_data"]["reduce_task"])
       self.reduce_result = reduce_task.reduce(self.reduced_data)
+      if isinstance(self.reduce_result, dict) and "_COMP_FILE_" in self.reduce_result:
+        files = {}
+        files[self.reduce_result["_COMP_FILE_"]["name"]] = self.reduce_result["_COMP_FILE_"]["stream"]
+        self.reduce_files = files
       self.reduce_done = True
       self.job_time = time.time() - payload["meta_data"]["job_start"]
   def get_reduce_result(self,payload):
     los = payload["los"]
     result = {"done": self.is_reduce_done()}
+    files = {}
     if self.is_reduce_done():
-        result["result"] = self.reduce_result
+        if isinstance(self.reduce_result, dict) and "_COMP_FILE_" in self.reduce_result:
+          files[self.reduce_result["_COMP_FILE_"]["name"]] = self.reduce_result["_COMP_FILE_"]["stream"]
+          result["result"] = self.reduce_result["_COMP_FILE_"]["name"]
+        else:
+          result["result"] = self.reduce_result
         result["job_time"] = self.job_time
-    self.isl.send(los,{"meta_data": payload["meta_data"], "action":"reduce_response","data": result, "reducer": self.get_id()})
+    self.isl.send(los,{"meta_data": payload["meta_data"], "action":"reduce_response","data": result, "reducer": self.get_id()},files)
   def reduce_response(self,payload):
       self.reduce_done = payload["data"]["done"]
       if payload["data"]["done"]:
           self.reduce_result = payload["data"]["result"]
+          if "files" in payload:
+            self.reduce_files = payload["files"]
           self.job_time = payload["data"]["job_time"]
   def set_expected_map_count(self, expected_count):
      if not self.remote_reducer is None:

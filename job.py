@@ -19,6 +19,13 @@ if __name__ == "__main__":
         default=None,
         help="job id (specify to return results of job)",
         type=str)
+
+  parser.add_argument(
+        '-f',
+        '--file',
+        default=None,
+        help="can be used with job id to download a job result file",
+        type=str)
   
   parser.add_argument(
         '-a',
@@ -140,14 +147,29 @@ if __name__ == "__main__":
   else:
     data["reducer"] = [1,1]
 
+  json_result = True
+
   if args.id is None:
     res = requests.post(f"{args.url}/submit", json=data)
   else:
     data = {"jobid": args.id}
-    res = requests.post(f"{args.url}/completion", json=data)
-    if not res.json()["done"]:
-      time.sleep(0.5)
+    if args.file is None:
       res = requests.post(f"{args.url}/completion", json=data)
+      if not res.json()["done"]:
+        time.sleep(0.5)
+        res = requests.post(f"{args.url}/completion", json=data)
+    else:
+      json_result = False
+      data["file"] = args.file
+      res = requests.post(f"{args.url}/download", json=data)
+      if res.status_code == 200:
+        with open(args.file,'wb') as f:
+          f.write(res.content)
+          print(f"Downloaded {args.file}")
+      else:
+        print(f"Failed to download {args.file}")
+        print(f"Status: {res.status_code}")
 
   
-  print(json.dumps(res.json()))
+  if json_result:
+    print(json.dumps(res.json()))

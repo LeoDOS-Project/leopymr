@@ -1,6 +1,6 @@
 import sys
 import os
-from flask import Flask, request
+from flask import Flask, request, send_file, abort
 from satellite import Satellite
 from routing import get_direction, add_direction, node_to_sat, sat_to_node, get_dist_hops
 from allocation import allocate
@@ -13,6 +13,7 @@ import time
 import uuid
 import io
 from werkzeug.datastructures import FileStorage
+import base64
 
 
 app = Flask(__name__)
@@ -180,6 +181,17 @@ def submit():
 
   return json.dumps({"reducer": reducer,"los": target.get_id(), "allocations":allocations,"allocator": allocator, "distance": distance, "reduce_distance": reduce_distance, "jobid": target.jobid})
  
+@app.route('/download', methods=['POST'])
+def download():
+   data = request.get_json(force=True)
+   jobid = data["jobid"]
+   file = data["file"]
+   path = f"results/{jobid}_{file}"
+   if not os.path.exists(path):
+     abort(404)
+      
+   return send_file(path, as_attachment=True)
+
 @app.route('/completion', methods=['POST'])
 def completion():
     data = request.get_json(force=True)
@@ -191,8 +203,21 @@ def completion():
       sent_request = True
     result = {"done": target.is_reduce_done(), "jobid": data["jobid"], "sent_request": sent_request}
     if target.is_reduce_done():
-      result["result"] = target.reduce_result
       result["job_time"] = target.job_time
+      if not target.reduce_files is None:
+        result_files = []
+        for file in target.reduce_files:
+          if file == "json":
+            continue
+          out_name = f"results/{data['jobid']}_{file}"
+          if not os.path.exists(out_name):
+            with open(out_name,'wb') as f:
+              f.write(target.reduce_files[file].read())
+          result_files.append(file)
+        result["result"] = {"files": result_files}
+      else:
+        result["result"] = target.reduce_result
+
     return json.dumps(result)
 
 if __name__ == '__main__':

@@ -24,14 +24,14 @@ class MisrCollector:
     for image_path in glob.glob(f"data/task{data_id}/*.dng"):
       converted_image = dng2png(image_path)
       byte_arr = io.BytesIO()
-      Image.fromarray(converted_image.astype('float64')).convert('L')
+      image = Image.fromarray(converted_image, mode="RGB")
       image.save(byte_arr, format='PNG')
       byte_arr_val = byte_arr.getvalue() 
       stream = io.BytesIO(byte_arr_val)
       fname = image_path.split('/')[-1].split('.dng')[0]
       output_name = fname + ".png"
       log(f"misrcollector converted dng to png image {output_name} len {len(byte_arr_val)}",context=payload)
-      yield {"value": output_name, "file": {"name": output_name, "stream": stream}}
+      yield {"value": output_name, "_COMP_FILE_": {"name": output_name, "stream": stream}}
 
 def get_task():
   return MisrCollector()

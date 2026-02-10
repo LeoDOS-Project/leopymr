@@ -5,6 +5,7 @@ import glob,os
 import math
 import numpy
 from misr import misr_merge
+import io
 
 import torch.serialization
 
@@ -31,7 +32,7 @@ class MisrReducer:
     merged_stream = io.BytesIO(byte_arr_val)
     log(f"misrreduce merged {fnames}",context=payload)
     output_name = f"reduce_merged.png"
-    return {"value": output_name, "file": {"name": output_name, "stream": merged_stream}}
+    return {"value": output_name, "_COMP_FILE_": {"name": output_name, "stream": merged_stream}}
 
 def get_task():
   return MisrReducer()
