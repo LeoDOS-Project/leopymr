@@ -1,7 +1,7 @@
 # SAR Use Case
 This use case exemplifies how Synthetic Aperture Radar (SAR) images
 can be processed with LeoCoMP. First denoising is done using
-the [deepspeckling](https://github.com/hi-paris/deepdespeckling/tree/main) library,
+the [deepdespeckling](https://github.com/hi-paris/deepdespeckling/tree/main) library,
 in a custom collector. The denoised images are then streamed to
 a custom mapper that performs object detection using the
 [Google Mediapipe](https://ai.google.dev/edge/mediapipe/solutions/vision/object_detector/) tool.
@@ -10,7 +10,7 @@ The top hits of objects detected are emitted to the standard reducer that just s
 ## Sample Data
 We use noisy SAR data from [GeoTIFF](https://github.com/GeoTIFF/test-data.git) as input
 and the `ssd_mobilenet_v2.tflite` model for detection. Note that the objects detected
-are not accurate, which is not the point of this demo, but rather how both pre-=processing
+are not accurate, which is not the point of this demo, but rather how both pre-processing
 and computer vision operation parameters can be easily parallelized, and data streamed.
 
 ## Deployment
