@@ -1,4 +1,4 @@
-#! SpaceCoMP Visualization
+# SpaceCoMP Visualization
 
 This web based viasualization shows all message paths
 between los, collectors, mappers and reducers from
