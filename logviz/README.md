@@ -11,7 +11,7 @@ Follow the direction to create a constellation and run a job
 ## Extract the logs
 Run
 ```
-./get_logs.sh myconstellation
+./get_log.sh myconstellation
 ```
 where `myconstellation` is the name you gave to the
 constellation when running the `create_constellation.sh`
