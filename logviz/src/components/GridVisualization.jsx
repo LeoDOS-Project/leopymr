@@ -77,12 +77,19 @@ const GridVisualization = ({ gridSize, activeMessages, nodeStats, nodeColors = {
                                 msg.action === 'set_map_count' ? '#eab308' :
                                     msg.action === 'reduce_data' ? '#a855f7' : '#6b7280';
 
+                        // Get from and to from waypoints
+                        const waypoints = msg.waypoints || [];
+                        if (waypoints.length < 2) return null;
+
+                        const from = waypoints[0];
+                        const to = waypoints[waypoints.length - 1];
+
                         // Coordinates: % based
                         // Center of cell x = (x + 0.5) / width * 100 %
-                        const x1 = `${(msg.from[0] + 0.5) / width * 100}%`;
-                        const y1 = `${(msg.from[1] + 0.5) / height * 100}%`;
-                        const x2 = `${(msg.to[0] + 0.5) / width * 100}%`;
-                        const y2 = `${(msg.to[1] + 0.5) / height * 100}%`;
+                        const x1 = `${(from[0] + 0.5) / width * 100}%`;
+                        const y1 = `${(from[1] + 0.5) / height * 100}%`;
+                        const x2 = `${(to[0] + 0.5) / width * 100}%`;
+                        const y2 = `${(to[1] + 0.5) / height * 100}%`;
 
                         return (
                             <line
@@ -106,8 +113,8 @@ const GridVisualization = ({ gridSize, activeMessages, nodeStats, nodeColors = {
                     const colorClass = ACTION_COLORS[msg.action] || ACTION_COLORS['default'];
                     return (
                         <div
-                            key={`dot-${idx}`}
-                            className={`absolute w-3 h-3 md:w-4 md:h-4 rounded-full ${colorClass} shadow-lg z-10 pointer-events-none transition-transform will-change-transform border border-white`}
+                            key={msg.id}
+                            className={`absolute w-3 h-3 md:w-4 md:h-4 rounded-full ${colorClass} shadow-lg z-10 pointer-events-none border border-white`}
                             style={{
                                 left: `${(msg.x + 0.5) / width * 100}%`,
                                 top: `${(msg.y + 0.5) / height * 100}%`,

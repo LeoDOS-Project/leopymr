@@ -58,6 +58,7 @@ class ISL:
   def send(self,sat,payload,files={}): 
     payload["target"] = sat
     target_id = target_config["id"]
+    payload["isl_msgid"] = str(uuid.uuid4())
     if target_id != sat:
       direction = get_direction(target_id, sat)
       next_sat = add_direction(target_id, direction)

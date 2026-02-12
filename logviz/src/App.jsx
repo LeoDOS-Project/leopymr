@@ -28,40 +28,6 @@ function App() {
     setIsPlaying(false);
   }, []);
 
-  const animate = useCallback((time) => {
-    if (lastFrameTimeRef.current !== undefined) {
-      const deltaTime = (time - lastFrameTimeRef.current) / 1000;
-
-      setCurrentTime(prevTime => {
-        const newTime = prevTime + deltaTime * playbackSpeed;
-        if (newTime >= duration + 2) { // Add some buffer at end
-          setIsPlaying(false);
-          return prevTime; // Stop at end? or loop? Stop for now.
-        }
-        return newTime;
-      });
-    }
-    lastFrameTimeRef.current = time;
-    if (isPlaying) {
-      requestRef.current = requestAnimationFrame(animate);
-    }
-  }, [duration, isPlaying, playbackSpeed]);
-
-  useEffect(() => {
-    if (isPlaying) {
-      lastFrameTimeRef.current = performance.now();
-      requestRef.current = requestAnimationFrame(animate);
-    } else {
-      cancelAnimationFrame(requestRef.current);
-    }
-    return () => cancelAnimationFrame(requestRef.current);
-  }, [isPlaying, animate]);
-
-  // Derive active messages for current time
-  // A message is active if it started before currentTime and hasn't finished.
-  // We need to define duration of a message.
-  // Assumption: Message speed is constant? Or fixed duration?
-  // Let's say speed = 5 grid units per second (variable).
   // Calculate first appearance time for each action
   const actionFirstTimes = useMemo(() => {
     const times = {};
@@ -81,55 +47,205 @@ function App() {
       .sort((a, b) => actionFirstTimes[a] - actionFirstTimes[b]); // Sort by appearance time
   }, [actionFirstTimes, currentTime]);
 
-  const MESSAGE_SPEED = 5;
-  const NODE_ACTION_DURATION = 1.0; // Duration for messages that stay on the same node
+  // Dynamic Animation Constants - MUST come before animationDuration
+  const { messageSpeed, playbackSpeedInit } = useMemo(() => {
+    if (logs.length === 0) return { messageSpeed: 5, playbackSpeedInit: 0.005 };
 
-  /* 
-   * Active Messages: Represents MOVING dots.
-   * If distance is 0, duration is 0, so it won't be active as a moving message.
-   * This is correct because the user wants "cell coloring" for effects, not a stationary dot.
+    const totalDuration = duration > 0 ? duration : 1;
+
+    // Find the worst-case message: the one that requires the highest speed to complete
+    // For each message, calculate: requiredSpeed = distance / (duration - startTime)
+    let maxRequiredSpeed = 0;
+    let totalDist = 0;
+
+    logs.forEach(l => {
+      totalDist += l.distance;
+      const availableTime = totalDuration - l.normalizedTime;
+      if (availableTime > 0 && l.distance > 0) {
+        const requiredSpeed = l.distance / availableTime;
+        if (requiredSpeed > maxRequiredSpeed) {
+          maxRequiredSpeed = requiredSpeed;
+        }
+      }
+    });
+
+    // For visual appeal, we might want messages to take at least some minimum time
+    // Let's target 10-15% of simulation duration for typical messages
+    const avgDist = totalDist / logs.length;
+    const targetMsgDuration = totalDuration * 0.15;
+    const visualSpeed = avgDist / targetMsgDuration;
+
+    // Use the faster of the two speeds (to ensure completion while maintaining visual appeal)
+    const calcSpeed = Math.max(maxRequiredSpeed, visualSpeed);
+
+    // Auto-adjust playback speed
+    // Target total real playback time = ~20 seconds
+    const targetRealTime = 20;
+    const calcPlayback = totalDuration / targetRealTime;
+
+    return {
+      messageSpeed: calcSpeed,
+      playbackSpeedInit: calcPlayback
+    };
+  }, [logs, duration]);
+
+  // Update playback speed on fresh load
+  useEffect(() => {
+    if (duration > 0) {
+      setPlaybackSpeed(playbackSpeedInit);
+    }
+  }, [playbackSpeedInit, duration]);
+
+  // Scale node action duration proportionally to simulation length
+  // For short sims (0.2s), we want a brief flash (0.04s)
+  // For long sims (24s), we can afford a longer effect (4.8s, but cap it)
+  const dynamicNodeActionDuration = Math.min(1.0, duration * 0.2);
+
+  // Animation duration should match the log duration exactly
+  // Messages travel within this timeframe based on messageSpeed
+  const animationDuration = duration;
+
+  const animate = useCallback((time) => {
+    if (lastFrameTimeRef.current !== undefined) {
+      const deltaTime = (time - lastFrameTimeRef.current) / 1000;
+
+      setCurrentTime(prevTime => {
+        const newTime = prevTime + deltaTime * playbackSpeed;
+        if (newTime >= animationDuration) {
+          setIsPlaying(false);
+          return animationDuration; // Clamp to end
+        }
+        return newTime;
+      });
+    }
+    lastFrameTimeRef.current = time;
+    if (isPlaying) {
+      requestRef.current = requestAnimationFrame(animate);
+    }
+  }, [animationDuration, isPlaying, playbackSpeed]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      lastFrameTimeRef.current = performance.now();
+      requestRef.current = requestAnimationFrame(animate);
+    } else {
+      cancelAnimationFrame(requestRef.current);
+    }
+    return () => cancelAnimationFrame(requestRef.current);
+  }, [isPlaying, animate]);
+
+
+  /*
+   * Active Messages: Represents MOVING dots following multi-hop routes.
    */
-  const activeMessages = useMemo(() => logs.filter(log => {
+  const activeMessages = useMemo(() => logs.filter(route => {
     // Start time
-    const startTime = log.normalizedTime;
+    const startTime = route.normalizedTime;
     // Duration = distance / speed
-    const msgDuration = log.distance / MESSAGE_SPEED;
+    const msgDuration = route.distance / messageSpeed;
     const endTime = startTime + msgDuration;
 
     return currentTime >= startTime && currentTime <= endTime;
-  }).map(log => {
-    const startTime = log.normalizedTime;
-    const msgDuration = log.distance / MESSAGE_SPEED;
+  }).map(route => {
+    const startTime = route.normalizedTime;
+    const msgDuration = route.distance / messageSpeed;
 
     // Avoid division by zero
-    const progress = msgDuration > 0 ? (currentTime - startTime) / msgDuration : 1;
+    const overallProgress = msgDuration > 0 ? (currentTime - startTime) / msgDuration : 1;
 
-    // Lerp position (handles from==to naturally, x=from[0])
-    const x = log.from[0] + (log.to[0] - log.from[0]) * progress;
-    const y = log.from[1] + (log.to[1] - log.from[1]) * progress;
+    // Calculate position along the multi-segment path
+    const waypoints = route.waypoints;
+    if (!waypoints || waypoints.length < 2) {
+      // Fallback for routes without waypoints
+      return { ...route, x: waypoints[0][0], y: waypoints[0][1] };
+    }
 
-    return { ...log, x, y };
-  }), [logs, currentTime]);
+    // Calculate segment lengths
+    const segmentLengths = [];
+    let totalLength = 0;
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const dx = waypoints[i + 1][0] - waypoints[i][0];
+      const dy = waypoints[i + 1][1] - waypoints[i][1];
+      const length = Math.sqrt(dx * dx + dy * dy);
+      segmentLengths.push(length);
+      totalLength += length;
+    }
+
+    // Find which segment we're on based on overall progress
+    const targetDistance = overallProgress * totalLength;
+    let accumulatedDistance = 0;
+    let currentSegment = 0;
+    let segmentProgress = 0;
+
+    for (let i = 0; i < segmentLengths.length; i++) {
+      if (accumulatedDistance + segmentLengths[i] >= targetDistance) {
+        currentSegment = i;
+        const distanceIntoSegment = targetDistance - accumulatedDistance;
+        segmentProgress = segmentLengths[i] > 0 ? distanceIntoSegment / segmentLengths[i] : 0;
+        break;
+      }
+      accumulatedDistance += segmentLengths[i];
+    }
+
+    // If we've gone past all segments, clamp to the last waypoint
+    if (currentSegment >= waypoints.length - 1) {
+      currentSegment = waypoints.length - 2;
+      segmentProgress = 1;
+    }
+
+    // Interpolate position within the current segment with wraparound
+    const from = waypoints[currentSegment];
+    const to = waypoints[currentSegment + 1];
+
+    // Calculate shortest path considering wraparound (toroidal topology)
+    const dx = to[0] - from[0];
+    const dy = to[1] - from[1];
+
+    // Determine if wrapping is shorter
+    let wrapX = dx;
+    let wrapY = dy;
+
+    if (Math.abs(dx) > gridSize.width / 2) {
+      // Wrapping around x-axis is shorter
+      wrapX = dx > 0 ? dx - gridSize.width : dx + gridSize.width;
+    }
+
+    if (Math.abs(dy) > gridSize.height / 2) {
+      // Wrapping around y-axis is shorter
+      wrapY = dy > 0 ? dy - gridSize.height : dy + gridSize.height;
+    }
+
+    // Interpolate with wraparound, then apply modulo to wrap coordinates
+    let x = from[0] + wrapX * segmentProgress;
+    let y = from[1] + wrapY * segmentProgress;
+
+    // Apply modulo to handle wraparound visualization
+    x = ((x % gridSize.width) + gridSize.width) % gridSize.width;
+    y = ((y % gridSize.height) + gridSize.height) % gridSize.height;
+
+    return { ...route, x, y };
+  }), [logs, currentTime, messageSpeed, gridSize]);
 
   // Derive active node colors based on ARRIVAL time
+  // Once a message arrives at a node, the color persists (doesn't fade out)
   const nodeColors = useMemo(() => {
     const colors = {};
-    // We check all logs to see if they are in their "active effect" window on the destination node
-    // Effect window: [Arrival Time, Arrival Time + NODE_ACTION_DURATION]
-    logs.forEach(log => {
-      const startTime = log.normalizedTime;
-      const travelDuration = log.distance / MESSAGE_SPEED;
+    logs.forEach(route => {
+      const startTime = route.normalizedTime;
+      const travelDuration = route.distance / messageSpeed;
       const arrivalTime = startTime + travelDuration;
-      const effectEndTime = arrivalTime + NODE_ACTION_DURATION;
 
-      if (currentTime >= arrivalTime && currentTime < effectEndTime) {
-        const key = `${log.to[0]},${log.to[1]}`;
+      // Color the node once the message has arrived (and keep it colored)
+      if (currentTime >= arrivalTime && route.waypoints && route.waypoints.length > 0) {
+        // Use the final waypoint as the destination
+        const destination = route.waypoints[route.waypoints.length - 1];
+        const key = `${destination[0]},${destination[1]}`;
         // Later actions override earlier ones if they overlap on the same node
-        colors[key] = log.action;
+        colors[key] = route.action;
       }
     });
     return colors;
-  }, [logs, currentTime]);
+  }, [logs, currentTime, messageSpeed]);
 
   return (
     <div className="h-screen w-full bg-gray-900 text-white flex flex-col p-4 overflow-hidden">
@@ -153,16 +269,19 @@ function App() {
           <div className="flex flex-col items-center w-full h-full min-h-0 flex-1">
             <div className="shrink-0 flex flex-col items-center w-full bg-gray-900 z-10 pb-4">
               <div className="mb-2 text-lg flex gap-4 items-center">
-                <span>Time: {currentTime.toFixed(2)}s / {duration.toFixed(2)}s</span>
+                <span>Time: {currentTime.toFixed(2)}s / {animationDuration.toFixed(2)}s</span>
                 <span>Active Msgs: {activeMessages.length}</span>
               </div>
 
               <div className="flex gap-4 mb-2 flex-wrap justify-center">
                 <button
-                  onClick={() => setIsPlaying(!isPlaying)}
+                  onClick={() => {
+                    if (currentTime >= animationDuration) setCurrentTime(0);
+                    setIsPlaying(!isPlaying);
+                  }}
                   className={`px-3 py-1 rounded font-bold ${isPlaying ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'}`}
                 >
-                  {isPlaying ? 'Pause' : 'Play'}
+                  {isPlaying ? 'Pause' : (currentTime >= animationDuration ? 'Replay' : 'Play')}
                 </button>
                 <button
                   onClick={() => {
@@ -177,14 +296,14 @@ function App() {
                   <label>Speed:</label>
                   <input
                     type="range"
-                    min="0.001"
-                    max="1"
-                    step="0.001"
+                    min="0.0001"
+                    max={playbackSpeedInit * 5} // Allow going up to 5x default
+                    step={playbackSpeedInit / 10}
                     value={playbackSpeed}
                     onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
                     className="w-24"
                   />
-                  <span>{playbackSpeed}x</span>
+                  <span>{playbackSpeed.toFixed(4)}x</span>
                 </div>
                 <button
                   onClick={() => setLogs([])}
@@ -198,7 +317,7 @@ function App() {
                 <input
                   type="range"
                   min="0"
-                  max={duration + 0.1}
+                  max={animationDuration}
                   step="0.01"
                   value={currentTime}
                   onChange={(e) => {
