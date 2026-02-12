@@ -4,6 +4,10 @@ This web based viasualization shows all message paths
 between los, collectors, mappers and reducers from
 a real run of a job based on logs replaid.
 
+## Visualize example logs with public web server
+Go to [https://leodos-project.github.io/leopymr/logviz](https://leodos-project.github.io/leopymr/logviz)
+and upload any of the example log files in [examples](examples/).
+
 ## Running a job
 Follow the direction to create a constellation and run a job
 [here](../README.md).
@@ -17,7 +21,7 @@ where `myconstellation` is the name you gave to the
 constellation when running the `create_constellation.sh`
 script. This will create a log file called `myconstellation.jsonl`.
 
-## Sart web server
+## Sart local web server
 Now start the web server with:
 ```
 ./start.sh
