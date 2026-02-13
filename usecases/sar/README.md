@@ -9,7 +9,7 @@ The top hits of objects detected are emitted to the standard reducer that just s
 
 ## Sample Data
 We use noisy SAR data from [GeoTIFF](https://github.com/GeoTIFF/test-data.git) as input
-and the `ssd_mobilenet_v2.tflite` model for detection. Note that the objects detected
+and the [ssd_mobilenet_v2.tflite](https://ai.google.dev/edge/mediapipe/solutions/vision/object_detector/#ssd_mobilenetv2_model) model for detection. Note that the objects detected
 are not accurate, which is not the point of this demo, but rather how both pre-processing
 and computer vision operation parameters can be easily parallelized, and data streamed.
 
