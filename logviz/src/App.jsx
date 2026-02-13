@@ -255,7 +255,7 @@ function App() {
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-xl">
             <FileUpload onFileUpload={handleFileUpload} />
-            <p className="mt-4 text-gray-400 text-center">Upload a JSONL log file to visualize network communication. (Examples <a target='_blank' href='./bipartite_center.jsonl'>here</a>)</p>
+            <p className="mt-4 text-gray-400 text-center">Upload a JSONL log file to visualize network communication. (Example log <a target='_blank' href='./bipartite_center.jsonl'>here</a>)</p>
           </div>
         </div>
       ) : (
