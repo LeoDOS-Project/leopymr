@@ -21,6 +21,7 @@ class Satellite:
     self.jobid = jobid
     self.total_mapped = 0
     self.reduce_files = None
+    self.reducer = None
   def dispatch(self,payload, files):
     if len(files) > 0:
       payload["files"] = files
@@ -30,11 +31,9 @@ class Satellite:
     if action == "collect":
       self.collect(payload)
     elif action == "map":
-      self.start_map(payload)
-    elif action == "collect_data":
-      self.collect_data(payload)
-    elif action == "reduce_data":
-      self.reduce_data(payload)
+      self.run_map(payload)
+    elif action == "reduce":
+      self.reduce(payload)
     elif action == "get_reduce_result":
       self.get_reduce_result(payload)
     elif action == "reduce_response":
@@ -44,9 +43,6 @@ class Satellite:
       log(f"Setting expected map count {self.expected_map_count}",sat=self,context=payload)
     else:
       log(f"Unknown action",sat=self,context=payload,verbosity=0)
-  def start_map(self,payload):
-    self.reducer = payload["reducer"]
-    self.isl.send(payload["collector"],{"meta_data": payload["meta_data"], "action":"collect","mapper": self.get_id()})
   def collect(self,payload):
     collect_task = comp_finder.find_collect(payload["meta_data"]["collect_task"])
     total_collected = 0
@@ -60,24 +56,26 @@ class Satellite:
       else:
         data.append(record)
       if len(data) >= payload["meta_data"]["max_collect_records"]:
-        self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "end_collect": False, "collected_index": total_collected,"data": data, "collector": self.get_id()},files)
+        self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"map", "end_collect": False, "collected_index": total_collected,"data": data, "collector": self.get_id()},files)
         data = []
         files = {}
-    self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"collect_data", "collected_index": total_collected, "end_collect": True, "data": data, "collector": self.get_id()},files)
-  def collect_data(self,payload):
+    self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"map", "collected_index": total_collected, "end_collect": True, "data": data, "collector": self.get_id()},files)
+  def run_map(self,payload):
+    if self.reducer is None:
+      self.reducer = payload["meta_data"]["reducer"]
     map_task = comp_finder.find_map(payload["meta_data"]["map_task"])
     if payload["end_collect"] and "data" in payload and len(payload["data"]) == 0:
-      self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce_data","end_map": True, "mapper": self.get_id()})
+      self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce","end_map": True, "mapper": self.get_id()})
       return
     for mapped_data in map_task.run_map(payload):
       self.total_mapped += 1
       if isinstance(mapped_data, dict) and "_COMP_FILE_" in mapped_data:
         files = {}
         files[mapped_data["_COMP_FILE_"]["name"]] = mapped_data["_COMP_FILE_"]["stream"]
-        self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce_data","end_map": payload["end_collect"], "data": mapped_data["value"], "mapper": self.get_id()},files)
+        self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce","end_map": payload["end_collect"], "data": mapped_data["value"], "mapper": self.get_id()},files)
       else:
-        self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce_data","end_map": payload["end_collect"], "data": mapped_data, "mapper": self.get_id()})
-  def reduce_data(self,payload):
+        self.isl.send(self.reducer,{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce","end_map": payload["end_collect"], "data": mapped_data, "mapper": self.get_id()})
+  def reduce(self,payload):
     if payload["end_map"]:
       self.map_count += 1
     mapper = payload["mapper"]

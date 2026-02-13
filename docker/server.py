@@ -170,14 +170,15 @@ def submit():
                  "map_task": map_task,
                  "max_collect_records": max_collect_records,
                  "reduce_task": reduce_task,
-                 "job_data": data.get("job_data")
+                 "job_data": data.get("job_data"),
+                 "reducer": reducer
             },
-            "action":"map","target": processor, "collector": task}
+            "action":"collect","target": task, "mapper": processor}
     log(f"REDUCE HOPS from {processor} to {reducer}")
     payload["reducer"] = reducer
     log(f"Submitting allocation {allocation} Map Task {data}")
-    host,port = sat2host(processor)
-    threading.Thread(target=send_data,args=(host,port,"send",payload)).start()
+    isl.send(task, payload)
+
 
 
   return json.dumps({"reducer": reducer,"los": target.get_id(), "allocations":allocations,"allocator": allocator, "distance": distance, "reduce_distance": reduce_distance, "jobid": target.jobid})

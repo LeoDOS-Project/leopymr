@@ -75,7 +75,8 @@ const GridVisualization = ({ gridSize, activeMessages, nodeStats, nodeColors = {
                         const strokeColor = msg.action === 'collect' ? '#3b82f6' :
                             msg.action === 'collect_data' ? '#22c55e' :
                                 msg.action === 'set_map_count' ? '#eab308' :
-                                    msg.action === 'reduce_data' ? '#a855f7' : '#6b7280';
+                                    msg.action === 'reduce_data' ? '#a855f7' :
+                                        msg.action === 'reduce' ? '#ef4444' : '#6b7280';
 
                         // Get from and to from waypoints
                         const waypoints = msg.waypoints || [];
