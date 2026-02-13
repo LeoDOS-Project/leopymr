@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "rm -rf ../docs/logviz && vite build && mv dist ../docs/logviz",
     "lint": "eslint .",
     "preview": "vite preview"
   },
