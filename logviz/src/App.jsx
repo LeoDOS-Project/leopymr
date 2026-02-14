@@ -249,13 +249,13 @@ function App() {
 
   return (
     <div className="h-screen w-full bg-gray-900 text-white flex flex-col p-4 overflow-hidden">
-      <h1 className="text-2xl font-bold mb-4 text-center shrink-0">CoMP Visualization</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center shrink-0">SpaceCoMP Visualization</h1>
 
       {logs.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-xl">
             <FileUpload onFileUpload={handleFileUpload} />
-            <p className="mt-4 text-gray-400 text-center">Upload a JSONL log file to visualize network communication. (Example log <a target='_blank' href='./bipartite_center.jsonl'>here</a>)</p>
+            <p className="mt-4 text-gray-400 text-center">Upload a JSONL log file to visualize network communication.</p>
           </div>
         </div>
       ) : (

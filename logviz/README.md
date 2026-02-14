@@ -6,7 +6,7 @@ a real run of a job based on logs replaid.
 
 ## Visualize example logs with public web server
 Go to [https://leodos-project.github.io/leopymr/logviz](https://leodos-project.github.io/leopymr/logviz)
-and upload any of the example log files in [examples](examples/).
+and upload any of the example log files in [public/examples](public/examples/).
 
 ## Running a job
 Follow the direction to create a constellation and run a job
