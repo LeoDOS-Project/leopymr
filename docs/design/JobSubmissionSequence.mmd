@@ -1,0 +1,85 @@
+sequenceDiagram
+autonumber
+participant Client
+participant Gateway
+participant RootSat as LOS Satellite (Sat 1,1)
+participant DataSat as Collect Satellite (Sensor)
+participant MapSat as Map Satellite (Processor)
+participant ReduceSat as Reduce Satellite (Aggregator)
+
+Note over Client, RootSat: Job Submission Phase
+
+Client->>Gateway: POST /submit (JSON job spec)
+Gateway->>RootSat: POST /submit (Forward to Orb1:8081)
+
+activate RootSat
+RootSat->>RootSat: allocate(collectors, aoi, allocator)
+RootSat->>RootSat: Determine Reducer
+
+rect rgb(240, 248, 255)
+note right of RootSat: Setup Phase
+alt Reducer is Remote
+RootSat->>ReduceSat: ISL Send (action: set_map_count)
+else Reducer is Local
+RootSat->>RootSat: set_expected_map_count()
+end
+end
+
+rect rgb(255, 250, 240)
+note right of RootSat: Job Distribution
+loop For each allocation
+RootSat->>DataSat: ISL Send (action: collect, target: DataSat, mapper: MapSat, reducer: ReduceSat)
+end
+end
+deactivate RootSat
+
+rect rgb(240, 255, 240)
+note right of DataSat: Collection & Mapping Phase
+activate DataSat
+DataSat->>DataSat: collect_task.collect()
+loop For each data chunk
+DataSat->>MapSat: ISL Send (action: map, data: chunk, end_collect: False)
+end
+DataSat->>MapSat: ISL Send (action: map, end_collect: True)
+deactivate DataSat
+
+activate MapSat
+MapSat->>MapSat: map_task.run_map()
+loop For each mapped result
+MapSat->>ReduceSat: ISL Send (action: reduce, data: result, end_map: False)
+end
+MapSat->>ReduceSat: ISL Send (action: reduce, end_map: True)
+deactivate MapSat
+end
+
+rect rgb(255, 240, 245)
+note right of ReduceSat: Reduction Phase
+activate ReduceSat
+ReduceSat->>ReduceSat: map_count += 1
+ReduceSat->>ReduceSat: Check is_map_done()
+alt All Maps Finished
+ReduceSat->>ReduceSat: reduce_task.reduce()
+ReduceSat->>ReduceSat: Set reduce_done = True
+end
+deactivate ReduceSat
+end
+
+Note over Client, ReduceSat: Job Completion Check Phase
+
+loop Polling for Completion
+Client->>Gateway: POST /completion (jobid)
+Gateway->>RootSat: POST /completion (jobid)
+activate RootSat
+
+alt Reducer is Remote & Result not cached
+RootSat->>ReduceSat: ISL Send (action: get_reduce_result)
+activate ReduceSat
+ReduceSat-->>RootSat: ISL Send (action: reduce_response, done: Status, result: Data)
+deactivate ReduceSat
+RootSat->>RootSat: Update local state (reduce_done, result)
+end
+
+RootSat-->>Gateway: JSON Response (done: True/False, result: ...)
+deactivate RootSat
+Gateway-->>Client: JSON Response
+end
