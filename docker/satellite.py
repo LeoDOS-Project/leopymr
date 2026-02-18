@@ -91,6 +91,7 @@ class Satellite:
         self.reduce_files = files
       self.reduce_done = True
       self.job_time = time.time() - payload["meta_data"]["job_start"]
+      self.get_reduce_result({"los":payload["meta_data"]["los"],"meta_data": payload["meta_data"]})
   def get_reduce_result(self,payload):
     los = payload["los"]
     result = {"done": self.is_reduce_done()}
@@ -110,6 +111,7 @@ class Satellite:
           if "files" in payload:
             self.reduce_files = payload["files"]
           self.job_time = payload["data"]["job_time"]
+          self.isl.send_gateway({"meta_data": payload["meta_data"], "job_time": payload["data"]["job_time"], "result": self.reduce_result})
   def set_expected_map_count(self, expected_count):
      if not self.remote_reducer is None:
        self.isl.send(self.remote_reducer,{"meta_data": {"jobid":self.jobid}, "action":"set_map_count","data": {"map_count":expected_count}})

@@ -68,6 +68,8 @@ class ISL:
       next_sat = sat
     host,port = sat2host(next_sat)
     threading.Thread(target=send_data,args=(host,port,"send",payload,files)).start()
+  def send_gateway(self,payload): 
+    threading.Thread(target=send_data,args=("gateway",8089,"publish",payload)).start()
 
 isl = ISL()
 
@@ -171,7 +173,8 @@ def submit():
                  "max_collect_records": max_collect_records,
                  "reduce_task": reduce_task,
                  "job_data": data.get("job_data"),
-                 "reducer": reducer
+                 "reducer": reducer,
+                 "los": target.get_id()
             },
             "action":"collect","target": task, "mapper": processor}
     log(f"REDUCE HOPS from {processor} to {reducer}")
@@ -198,12 +201,7 @@ def download():
 def completion():
     data = request.get_json(force=True)
     target = get_target(data["jobid"])
-    sent_request = False
-    if not target.remote_reducer is None:
-      payload = {"meta_data":{"jobid":data["jobid"]},"action":"get_reduce_result","los": target.get_id()}
-      isl.send(target.remote_reducer,payload)
-      sent_request = True
-    result = {"done": target.is_reduce_done(), "jobid": data["jobid"], "sent_request": sent_request}
+    result = {"done": target.is_reduce_done(), "jobid": data["jobid"]}
     if target.is_reduce_done():
       result["job_time"] = target.job_time
       if not target.reduce_files is None:

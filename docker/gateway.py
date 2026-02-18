@@ -1,6 +1,6 @@
 import sys
 import os
-from flask import Flask, request, send_file, abort
+from flask import Flask, request, send_file, abort, Response
 from routing import get_direction, add_direction, node_to_sat, sat_to_node
 from allocation import allocate
 import json
@@ -9,8 +9,24 @@ import threading
 import random
 import time
 import io
+import queue
 
 app = Flask(__name__)
+
+class PubSub:
+  def __init__(self):
+    self.listeners = []
+  def subscribe(self):
+    self.listeners.append(queue.Queue(maxsize=15))
+    return self.listeners[-1]
+  def publish(self, msg):
+    for i in reversed(range(len(self.listeners))):
+      try:
+        self.listeners[i].put_nowait(msg)
+      except queue.Full:
+        del self.listeners[i]
+
+pubsub = PubSub()
 
 
 def send_data(host, port, path, data):
@@ -64,6 +80,23 @@ def download():
     download_name=data["file"])
 
    return send_file(path, as_attachment=True)
+
+@app.route('/publish', methods=['POST'])
+def broadcast():
+    data = request.get_json(force=True)
+    msg = f'data: {json.dumps(data)}\n\n'
+    msg = f'event: spacecomp\n{msg}'
+    pubsub.publish(msg)
+    return json.dumps({"status":"OK"})
+
+@app.route('/subscribe', methods=['GET'])
+def subscribe():
+  def stream():
+    messages = pubsub.subscribe()
+    while True:
+      msg = messages.get()
+      yield msg
+  return Response(stream(), mimetype='text/event-stream')
 
 
 if __name__ == '__main__':
