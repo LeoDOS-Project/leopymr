@@ -28,7 +28,7 @@ python3 job.py -mi 1 -ma 4 -c 3 -ct misrcollector -mt misrmapper -rt misrreducer
 
 ## Results
 The output of the job is a json dictionary with the name of the final combined image.
-The image can be donwloaded with:
+The image can be downloaded with:
 ```
 python3 job.py -i (job id) -f (file name)
 ```
