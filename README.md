@@ -14,7 +14,7 @@ Start up constellation:
 ./up.sh myconstellation
 ```
 
-## Submit jobs
+## Submit Jobs
 ```
 usage: job.py [-h] [-i ID] [-f FILE] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT] [-c COLLECTORS]
               [-ct COLLECTTASK] [-mt MAPTASK] [-rt REDUCETASK] [-d DATA] [-mr MAXRECORDS] [-u URL]
@@ -45,6 +45,24 @@ options:
                         max records to collect before streaming to mapper
   -u, --url URL         gateway server endpoint
 ```
+## Job Completion Events
+As an alternative to using the `-i` flag to poll for job results, a client
+may also subscribe to an SSE event with the gateway.
+```
+python3 listen.py
+```
+All job completions will be pushed to all listeners
+in the SSE format.
+With `curl` this could also be achieved with:
+```
+curl -N "http://localhost:8089/subscribe"
+```
+
+## Host Wihtout Python
+If the docker host does not run python or is missinf any of
+the python dependecies, bash scripts may be used as drop-in replacements for
+`job.py` and `listen.py` called `job.sh` and `listen.sh` respectively.
+The bash scripts only depend on `jq` and `curl`.
 
 ## Architecture
 Each plane is represented by a separate
