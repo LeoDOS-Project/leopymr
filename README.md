@@ -59,7 +59,7 @@ curl -N "http://localhost:8089/subscribe"
 ```
 
 ## Host Wihtout Python
-If the docker host does not run python or is missinf any of
+If the docker host does not run python or is missing any of
 the python dependecies, bash scripts may be used as drop-in replacements for
 `job.py` and `listen.py` called `job.sh` and `listen.sh` respectively.
 The bash scripts only depend on `jq` and `curl`.
