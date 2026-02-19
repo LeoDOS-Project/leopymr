@@ -56,15 +56,23 @@ def response():
 def submit():
   data = request.get_json(force=True)
   host,port = sat2host([1,1])
-  res = send_data(host,port,"submit",data)
-  return json.dumps(res.json())
+  try:
+    res = send_data(host,port,"submit",data)
+    result = res.json()
+  except Exception as inst:
+      result = {"error": f"{inst}"}
+  return json.dumps(result)
  
 @app.route('/completion', methods=['POST'])
 def completion():
   data = request.get_json(force=True)
   host,port = sat2host([1,1])
-  res = send_data(host,port,"completion",data)
-  return json.dumps(res.json())
+  try:
+    res = send_data(host,port,"completion",data)
+    result = res.json()
+  except Exception as inst:
+    result = {"error": f"{inst}"}
+  return json.dumps(result)
 
 @app.route('/download', methods=['POST'])
 def download():
