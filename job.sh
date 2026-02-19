@@ -229,10 +229,16 @@ if [ -z "$JOB_ID" ]; then
     rm "$TMP_AOI" "$SHUFFLED_AOI"
 
     # Submit
-    curl -s -X POST "$URL/submit" \
+    RES=$(curl -s -X POST "$URL/submit" \
         -H "Content-Type: application/json" \
-        -d "$PAYLOAD" | jq .
-
+	-d "$PAYLOAD")
+    if [ $? -ne 0 ]; then
+     curl -X POST "$URL/submit" \
+        -H "Content-Type: application/json" \
+        -d "$PAYLOAD"
+    else
+     echo "$RES" | jq .
+    fi
 else
     # Job ID provided
     if [ -z "$RESULT_FILE" ]; then
