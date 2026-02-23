@@ -50,7 +50,7 @@ const FileUpload = ({ onFileUpload }) => {
             <div className="text-center">
                 <p className="text-gray-400 mb-2">Or select an example:</p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                    {['bipartite_center.jsonl', 'misr.jsonl', 'random_los.jsonl', 'sar.jsonl'].map(filename => (
+                    {['bipartite_center.jsonl','random_los.jsonl', 'misr.jsonl', 'sar.jsonl', 'vjepa.jsonl'].map(filename => (
                         <button
                             key={filename}
                             onClick={() => {
