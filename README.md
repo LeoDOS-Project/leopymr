@@ -1,6 +1,9 @@
 # leopymr - SpaceCoMP implementation in Python
 [![CoMP Test](https://github.com/LeoDOS-Project/leopymr/actions/workflows/test.yml/badge.svg)](https://github.com/LeoDOS-Project/leopymr/actions/workflows/test.yml)
 
+This repository contains a Python reference implementation of the `SpaceCoMP` model presented in:
+[Lightspeed Data Compute for the Space Era](https://arxiv.org/abs/2601.17589).
+
 ## Getting Started
 Create constellation testbed:
 ```
@@ -79,8 +82,7 @@ to showcase a simple distributed wordcount job.
 Custom tasks can be added into `docker/collectors`, `docker/mappers` and
 `docker/reducers`.
  
-## Paper and Citation
-[Lightspeed Data Compute for the Space Era](https://arxiv.org/abs/2601.17589).
+## Citation
 If you find this repository useful, please consider giving a :star: and a citation. 
 ```bibtex
 @article{sandholm2026lightspeed,
