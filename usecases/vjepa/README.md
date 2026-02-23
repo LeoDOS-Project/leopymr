@@ -1,16 +1,18 @@
 # V-JEPA Use Case
 This use case exemplifies how a Video-Joint Embedding Predictive Architecture (V-JEPA)
 model can be used to process video frames in paralell and recognize various motions
-based on pre-trained models from [Facebook FAIR](https://github.com/facebookresearch/vjepa2).
+based on pre-trained models from [Meta FAIR](https://github.com/facebookresearch/vjepa2).
 This example also demonstrate how to skip the map step and stream data directly
 from collectors to the reducer.
 
 ## Sample Data
 A small [sample video](https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4) 
-or your own mp4 video (call it `sample.mp4` and place it in this directory before deploying).
+or your own mp4 video (call it `sample.mp4` and place it in this directory before deploying)
 may be used.
 
 ## Deployment
+Before deploying please install the [huggingface-cli](https://huggingface.co/docs/huggingface_hub/main/guides/cli).
+Then run:
 ```
 ./deploy.sh
 ```
