@@ -81,6 +81,8 @@ are synchronous. An example collector/mapper/reducer was implemented
 to showcase a simple distributed wordcount job.
 Custom tasks can be added into `docker/collectors`, `docker/mappers` and
 `docker/reducers`.
+
+![SpaceCoMP Docker](assets/SpaceCoMPDocker.svg)
  
 ## Citation
 If you find this repository useful, please consider giving a :star: and a citation. 
