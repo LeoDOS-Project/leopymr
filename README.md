@@ -79,8 +79,9 @@ to showcase a simple distributed wordcount job.
 Custom tasks can be added into `docker/collectors`, `docker/mappers` and
 `docker/reducers`.
  
-## Paper
+## Paper and Citation
 [Lightspeed Data Compute for the Space Era](https://arxiv.org/abs/2601.17589).
+If you find this repository useful, please consider giving a :star: and a citation. 
 ```bibtex
 @article{sandholm2026lightspeed,
   title={Lightspeed Data Compute for the Space Era},
