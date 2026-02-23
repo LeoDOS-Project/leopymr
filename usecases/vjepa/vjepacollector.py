@@ -39,7 +39,7 @@ class VJEPACollector:
     log(f"VJEPACollector fname {fname} id {data_id} size {file_size} start {start_frame} end {end_frame}",context=payload)
 
     if not cap.isOpened():
-      print("Error: Cannot open video")
+      log(f"VJEPACollector fname {fname} cannot open video",context=payload,verbosity=0)
       return
 
     frame_buffer = deque(maxlen=NUM_FRAMES)
@@ -50,7 +50,7 @@ class VJEPACollector:
         ret, frame = cap.read()
 
         if not ret:
-            print("Failed to capture frame")
+            log(f"VJEPACollector fname {fname} failed to read frame",context=payload,verbosity=0)
             break
 
         current_frame += 1
@@ -70,8 +70,6 @@ class VJEPACollector:
             predicted_label_id = logits.argmax(-1).item()
             label = model.config.id2label[predicted_label_id]
             log(f"VJEPACollector Predicted label {label}",context=payload)
-
-            print(f"Prediction: {label}")
             yield {label:1}
             frame_buffer.clear()
     finally:
