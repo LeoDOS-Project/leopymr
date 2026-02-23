@@ -48,18 +48,34 @@ class Satellite:
     total_collected = 0
     data = []
     files = {}
+    skip_map = hasattr(collect_task, 'COMP_SKIP_MAP')
+
     for record in collect_task.collect(payload):
       total_collected += 1
       if isinstance(record, dict) and "_COMP_FILE_" in record:
-        files[record["_COMP_FILE_"]["name"]] = record["_COMP_FILE_"]["stream"]
-        data.append(record["value"])  
+          files[record["_COMP_FILE_"]["name"]] = record["_COMP_FILE_"]["stream"]
+          data.append(record["value"])  
       else:
         data.append(record)
       if len(data) >= payload["meta_data"]["max_collect_records"]:
-        self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"map", "end_collect": False, "collected_index": total_collected,"data": data, "collector": self.get_id()},files)
+        if not skip_map:
+          self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"map", "end_collect": False, "collected_index": total_collected,"data": data, "collector": self.get_id()},files)
+        else:
+          self.isl.send(payload["meta_data"]["reducer"],{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce","end_map": False, "data": self.combine(data), "mapper": self.get_id()},files)
         data = []
         files = {}
-    self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"map", "collected_index": total_collected, "end_collect": True, "data": data, "collector": self.get_id()},files)
+    if not skip_map:
+      self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"map", "collected_index": total_collected, "end_collect": True, "data": data, "collector": self.get_id()},files)
+    else:
+      self.isl.send(payload["meta_data"]["reducer"],{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce","end_map": True, "data": self.combine(data), "mapper": self.get_id()},files)
+  def combine(self, data):
+    result = {}
+    for d in data:
+      for k in d:
+        if not k in result:
+          result[k] = 0
+        result[k] += d[k]
+    return result
   def run_map(self,payload):
     if self.reducer is None:
       self.reducer = payload["meta_data"]["reducer"]
