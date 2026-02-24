@@ -7,12 +7,20 @@ fi
 if [ ! -d ../../docker/huggingface ]; then
   CLIOK=0
   which huggingface-cli && CLIOK=1
+  if [ $CLIOK -eq 1 ]; then
+    HF="huggingface-cli"
+  else
+    which hf && CLIOK=1
+    if [ $CLIOK -eq 1 ]; then
+      HF="hf"
+    fi
+  fi
   if [ $CLIOK -eq 0 ]; then
-    echo "Please install huggingface-cli" 
+    echo "Please install Huggingface CLI" 
     exit 1
   fi
-  huggingface-cli download facebook/vjepa2-vitl-fpc16-256-ssv2
-  CACHEDIR=`huggingface-cli env | grep HF_HUB_CACHE | awk {'print $3'} | sed 's/\/hub$//'`
+  ${HF} download facebook/vjepa2-vitl-fpc16-256-ssv2
+  CACHEDIR=`${HF} env | grep HF_HUB_CACHE | awk {'print $3'} | sed 's/\/hub$//'`
   if [ "X${CACHEDIR}" == "X" ]; then
     echo "Huggingface model download failed. Cache missing."
     exit 1
