@@ -19,8 +19,9 @@ Start up constellation:
 
 ## Submit Jobs
 ```
-usage: job.py [-h] [-i ID] [-f FILE] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT] [-c COLLECTORS]
-              [-ct COLLECTTASK] [-mt MAPTASK] [-rt REDUCETASK] [-d DATA] [-mr MAXRECORDS] [-u URL]
+usage: job.py [-h] [-i ID] [-f FILE] [-a {bipartite,random}] [-s SEED] [-r {los,center}] [-mi MINSAT] [-ma MAXSAT]
+              [-c COLLECTORS] [-ct COLLECTTASK] [-cbt COMBINETASK] [-mt MAPTASK] [-rt REDUCETASK] [-d DATA]
+              [-mr MAXRECORDS] [-u URL]
 
 Submits and gets results from collect mapreduce task
 
@@ -39,6 +40,8 @@ options:
                         total collectors (and mappers)
   -ct, --collecttask COLLECTTASK
                         collector task
+  -cbt, --combinetask COMBINETASK
+                        combiner task
   -mt, --maptask MAPTASK
                         mapper task
   -rt, --reducetask REDUCETASK
