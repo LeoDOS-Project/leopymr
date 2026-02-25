@@ -71,6 +71,12 @@ if __name__ == "__main__":
         help="collector task",
         type=str)
   parser.add_argument(
+        '-cbt',
+        '--combinetask',
+        default='mergecombiner',
+        help="combiner task",
+        type=str)
+  parser.add_argument(
         '-mt',
         '--maptask',
         default='wordcountmapper',
@@ -132,6 +138,7 @@ if __name__ == "__main__":
         "aoi":aoi,
         "allocator": allocator,
         "collect_task": args.collecttask,
+        "combine_task": args.combinetask,
         "map_task": args.maptask,
         "reduce_task": args.reducetask,
         "max_collect_records": args.maxrecords,

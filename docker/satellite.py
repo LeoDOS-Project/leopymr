@@ -61,21 +61,16 @@ class Satellite:
         if not skip_map:
           self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"map", "end_collect": False, "collected_index": total_collected,"data": data, "collector": self.get_id()},files)
         else:
-          self.isl.send(payload["meta_data"]["reducer"],{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce","end_map": False, "data": self.combine(data), "mapper": self.get_id()},files)
+          self.isl.send(payload["meta_data"]["reducer"],{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce","end_map": False, "data": self.combine(data, payload), "mapper": self.get_id()},files)
         data = []
         files = {}
     if not skip_map:
       self.isl.send(payload["mapper"],{"meta_data": payload["meta_data"],"action":"map", "collected_index": total_collected, "end_collect": True, "data": data, "collector": self.get_id()},files)
     else:
-      self.isl.send(payload["meta_data"]["reducer"],{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce","end_map": True, "data": self.combine(data), "mapper": self.get_id()},files)
-  def combine(self, data):
-    result = {}
-    for d in data:
-      for k in d:
-        if not k in result:
-          result[k] = 0
-        result[k] += d[k]
-    return result
+      self.isl.send(payload["meta_data"]["reducer"],{"mapped_index": self.total_mapped, "meta_data": payload["meta_data"], "action":"reduce","end_map": True, "data": self.combine(data, payload), "mapper": self.get_id()},files)
+  def combine(self, data, payload):
+    combine_task = comp_finder.find_combine(payload["meta_data"]["combine_task"])
+    return combine_task.combine(data, payload)
   def run_map(self,payload):
     if self.reducer is None:
       self.reducer = payload["meta_data"]["reducer"]

@@ -131,6 +131,12 @@ def submit():
     reduce_task = data["reduce_task"]
   else:
     reduce_task = "sumreducer" 
+  if "combine_task" in data:
+    combine_task = data["combine_task"]
+  else:
+    combine_task = "mergecombiner" 
+
+
   if "max_collect_records" in data:
     max_collect_records = data["max_collect_records"]
   else:
@@ -172,6 +178,7 @@ def submit():
                  "map_task": map_task,
                  "max_collect_records": max_collect_records,
                  "reduce_task": reduce_task,
+                 "combine_task": combine_task,
                  "job_data": data.get("job_data"),
                  "reducer": reducer,
                  "los": target.get_id()

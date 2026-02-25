@@ -11,6 +11,7 @@ COLLECTORS=11
 COLLECTTASK="doccollector"
 MAPTASK="wordcountmapper"
 REDUCETASK="sumreducer"
+COMBINETASK="mergecombiner"
 MAXRECORDS=1024
 DATA_FILE=""
 JOB_ID=""
@@ -21,21 +22,22 @@ function show_help {
     echo "Usage: $0 [options]"
     echo ""
     echo "Options:"
-    echo "  -i, --id ID             Job ID (specify to return results of job)"
-    echo "  -f, --file FILE         Can be used with job id to download a job result file"
-    echo "  -a, --allocator ALLOC   Map allocator (default: bipartite)"
-    echo "  -s, --seed SEED         Random aoi shuffle seed (default: -1)"
-    echo "  -r, --reducetype TYPE   Reduce placement (default: center)"
-    echo "  -mi, --minsat N         Min aoi grid index (default: 3)"
-    echo "  -ma, --maxsat N         Max aoi grid index (default: 8)"
-    echo "  -c, --collectors N      Total collectors (and mappers) (default: 11)"
-    echo "  -ct, --collecttask TASK Collector task (default: doccollector)"
-    echo "  -mt, --maptask TASK     Mapper task (default: wordcountmapper)"
-    echo "  -rt, --reducetask TASK  Reducer task (default: sumreducer)"
-    echo "  -d, --data FILE         Job data file (json)"
-    echo "  -mr, --maxrecords N     Max records to collect before streaming to mapper (default: 1024)"
-    echo "  -u, --url URL           Gateway server endpoint (default: http://localhost:8089)"
-    echo "  -h, --help              Show this help message"
+    echo "  -i, --id ID              Job ID (specify to return results of job)"
+    echo "  -f, --file FILE          Can be used with job id to download a job result file"
+    echo "  -a, --allocator ALLOC    Map allocator (default: bipartite)"
+    echo "  -s, --seed SEED          Random aoi shuffle seed (default: -1)"
+    echo "  -r, --reducetype TYPE    Reduce placement (default: center)"
+    echo "  -mi, --minsat N          Min aoi grid index (default: 3)"
+    echo "  -ma, --maxsat N          Max aoi grid index (default: 8)"
+    echo "  -c, --collectors N       Total collectors (and mappers) (default: 11)"
+    echo "  -ct, --collecttask TASK  Collector task (default: doccollector)"
+    echo "  -mt, --maptask TASK      Mapper task (default: wordcountmapper)"
+    echo "  -rt, --reducetask TASK   Reducer task (default: sumreducer)"
+    echo "  -cbt, --combinetask TASK Combiner task (default: mergecombiner)"
+    echo "  -d, --data FILE          Job data file (json)"
+    echo "  -mr, --maxrecords N      Max records to collect before streaming to mapper (default: 1024)"
+    echo "  -u, --url URL            Gateway server endpoint (default: http://localhost:8089)"
+    echo "  -h, --help               Show this help message"
 }
 
 # Argument parsing
@@ -83,6 +85,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -rt|--reducetask)
             REDUCETASK="$2"
+            shift 2
+            ;;
+        -cbt|--combinetask)
+            COMBINETASK="$2"
             shift 2
             ;;
         -d|--data)
@@ -210,6 +216,7 @@ if [ -z "$JOB_ID" ]; then
         --arg collect_task "$COLLECTTASK" \
         --arg map_task "$MAPTASK" \
         --arg reduce_task "$REDUCETASK" \
+        --arg combine_task "$COMBINETASK" \
         --argjson max_collect_records "$MAXRECORDS" \
         --argjson job_data "$JOB_DATA" \
         --argjson reducer "$REDUCER_JSON" \
@@ -220,6 +227,7 @@ if [ -z "$JOB_ID" ]; then
             collect_task: $collect_task,
             map_task: $map_task,
             reduce_task: $reduce_task,
+            combine_task: $combine_task,
             max_collect_records: $max_collect_records,
             job_data: $job_data,
             reducer: $reducer
