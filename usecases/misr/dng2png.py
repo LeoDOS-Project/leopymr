@@ -36,4 +36,3 @@ if __name__ == "__main__":
     png_path = sys.argv[2]
 
     dng2png(dng_path, png_path)
-
