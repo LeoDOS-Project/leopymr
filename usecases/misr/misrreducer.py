@@ -1,9 +1,6 @@
 #! /usr/bin/env python3
 
 from utils import log
-import glob
-import os
-import math
 import numpy
 from misr import misr_merge
 import io
@@ -33,8 +30,7 @@ class MisrReducer:
         merged_image.save(byte_arr, format='PNG')
         byte_arr_val = byte_arr.getvalue()
         merged_stream = io.BytesIO(byte_arr_val)
-        log(f"misrreduce merged {fnames}", context=payload)
-        output_name = f"reduce_merged.png"
+        output_name = "reduce_merged.png"
         return {
             "value": output_name,
             "_COMP_FILE_": {

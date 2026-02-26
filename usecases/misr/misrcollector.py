@@ -2,8 +2,6 @@
 
 from utils import log
 import glob
-import os
-import math
 import numpy
 import io
 from PIL import Image

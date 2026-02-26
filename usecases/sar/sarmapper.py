@@ -3,11 +3,6 @@
 import cv2
 import mediapipe as mp
 from utils import log
-import glob
-import os
-import math
-from deepdespeckling.despeckling import despeckle
-from deepdespeckling.utils import utils
 import numpy
 
 import torch.serialization

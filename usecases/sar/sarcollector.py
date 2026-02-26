@@ -2,10 +2,6 @@
 
 from utils import log
 import glob
-import os
-import math
-from deepdespeckling.despeckling import despeckle
-from deepdespeckling.utils import utils
 import numpy
 from deepdespeckling.utils.load_cosar import load_tiff_image
 from deepdespeckling.utils.constants import PATCH_SIZE, STRIDE_SIZE

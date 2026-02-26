@@ -27,3 +27,7 @@ disable=
     C0200, # (consider-using-enumerate)
     W0108, # (unnecessary-lambda)
     E0606, # (possibly-used-before-assignment)
+    E1101, # (no-member)
+    C0412, # (ungrouped-imports)
+    R0801, # (similar lines in 2 files)
+    E0611, # (no-name-in-module)

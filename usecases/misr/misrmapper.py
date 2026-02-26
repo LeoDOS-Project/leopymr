@@ -1,9 +1,6 @@
 #! /usr/bin/env python3
 
 from utils import log
-import glob
-import os
-import math
 import numpy
 from misr import misr_merge
 import io
